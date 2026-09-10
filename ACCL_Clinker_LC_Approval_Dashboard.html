@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ACCL · Clinker LC Approval Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --navy:#0e2a47;
+    --navy-2:#123c63;
+    --teal:#0e7f7f;
+    --teal-2:#12a5a5;
+    --ink:#17202a;
+    --muted:#5b6b7c;
+    --line:#e3e9ef;
+    --bg:#f4f7fa;
+    --card:#ffffff;
+    --green:#16a34a;
+    --green-bg:#eaf7ef;
+    --amber:#d97706;
+    --amber-bg:#fdf3e3;
+    --red:#dc2626;
+    --red-bg:#fdeaea;
+    --blue:#2563eb;
+    --blue-bg:#eaf1fe;
+    --shadow:0 1px 3px rgba(16,42,71,.08),0 8px 24px rgba(16,42,71,.06);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1320px;margin:0 auto;padding:22px 26px 60px}
+
+  /* ===== Header ===== */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;
+    background:linear-gradient(120deg,var(--navy) 0%,var(--navy-2) 60%,#0f4a5a 100%);
+    color:#fff;border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow);
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand .logo{
+    width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--teal-2),var(--teal));
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;letter-spacing:.5px;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);
+  }
+  .brand h1{font-size:20px;font-weight:700;letter-spacing:.2px}
+  .brand .sub{font-size:12.5px;color:#cfe0ee;margin-top:2px}
+  .top-meta{text-align:right}
+  .top-meta .period{font-size:13px;color:#cfe0ee}
+  .top-meta .date{font-size:11.5px;color:#8fb3cc;margin-top:3px}
+
+  /* ===== Verdict banner ===== */
+  .verdict{
+    margin-top:16px;border-radius:var(--radius);padding:20px 24px;display:flex;flex-wrap:wrap;
+    align-items:center;gap:18px;background:linear-gradient(120deg,#0c3a22,#14532d 70%);
+    color:#fff;box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .verdict .glow{position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;
+    background:radial-gradient(circle,rgba(34,197,94,.45),transparent 70%)}
+  .verdict-badge{
+    display:flex;align-items:center;gap:12px;font-size:30px;font-weight:800;letter-spacing:.5px;z-index:1;
+  }
+  .verdict-badge .dot{width:16px;height:16px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 5px rgba(74,222,128,.25)}
+  .verdict .summary{flex:1;min-width:260px;z-index:1}
+  .verdict .summary .s1{font-size:15.5px;font-weight:600}
+  .verdict .summary .s2{font-size:13px;color:#cdecd9;margin-top:3px}
+  .verdict .scorechip{z-index:1;text-align:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);
+    border-radius:12px;padding:10px 18px}
+  .verdict .scorechip .n{font-size:30px;font-weight:800;line-height:1}
+  .verdict .scorechip .l{font-size:11px;color:#cdecd9;text-transform:uppercase;letter-spacing:.8px;margin-top:4px}
+
+  /* ===== KPI cards ===== */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px}
+  @media(max-width:960px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.kpi-grid{grid-template-columns:1fr}}
+  .kpi{background:var(--card);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border:1px solid var(--line)}
+  .kpi .k-label{font-size:11.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:700}
+  .kpi .k-value{font-size:26px;font-weight:800;margin-top:7px;color:var(--navy)}
+  .kpi .k-value small{font-size:13px;font-weight:600;color:var(--muted)}
+  .kpi .k-sub{font-size:12.5px;color:var(--muted);margin-top:5px}
+  .kpi.accent{border-top:3px solid var(--teal)}
+  .kpi.green{border-top:3px solid var(--green)}
+  .kpi.amber{border-top:3px solid var(--amber)}
+
+  /* ===== Section ===== */
+  .section{margin-top:22px}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+  .sec-head h2{font-size:16.5px;font-weight:800;color:var(--navy)}
+  .sec-head .hint{font-size:12px;color:var(--muted)}
+
+  /* ===== Domain score cards ===== */
+  .domains{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+  @media(max-width:1080px){.domains{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:640px){.domains{grid-template-columns:repeat(2,1fr)}}
+  .domain{background:var(--card);border-radius:var(--radius);padding:18px 16px;text-align:center;
+    box-shadow:var(--shadow);border:1px solid var(--line)}
+  .ring{--p:80;--c:var(--teal);width:92px;height:92px;border-radius:50%;margin:0 auto 10px;
+    background:conic-gradient(var(--c) calc(var(--p)*1%), #e7edf3 0);display:grid;place-items:center;position:relative}
+  .ring::before{content:"";position:absolute;inset:9px;border-radius:50%;background:#fff}
+  .ring .val{position:relative;font-size:22px;font-weight:800;color:var(--navy)}
+  .domain h3{font-size:13.5px;font-weight:700;color:var(--navy)}
+  .domain .note{font-size:11.5px;color:var(--muted);margin-top:7px;text-align:left;line-height:1.4}
+  .domain .tag{display:inline-block;margin-top:9px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px}
+  .tag.ok{background:var(--green-bg);color:var(--green)}
+  .tag.cond{background:var(--amber-bg);color:var(--amber)}
+  .tag.gap{background:var(--blue-bg);color:var(--blue)}
+
+  /* ===== Cards / panels ===== */
+  .card{background:var(--card);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);border:1px solid var(--line)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:960px){.grid2,.grid3{grid-template-columns:1fr}}
+  .chart-box{position:relative;height:290px}
+  .chart-box.tall{height:330px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+  /* ===== Tables ===== */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:#f1f5f9;color:var(--navy);font-weight:700;text-align:left;padding:10px 12px;border-bottom:2px solid var(--line)}
+  td{padding:9px 12px;border-bottom:1px solid var(--line);color:var(--ink)}
+  tr:last-child td{border-bottom:none}
+  .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+  .total td{background:#f7fafc;font-weight:800;color:var(--navy);border-top:2px solid var(--line)}
+
+  /* ===== Approval chain ===== */
+  .chain{display:flex;align-items:center;gap:0;flex-wrap:wrap}
+  .step{display:flex;align-items:center}
+  .step .node{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .step .circle{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:15px;
+    background:#eef2f7;color:#8aa0b5;border:2px solid #d8e0e8}
+  .step .lbl{font-size:11.5px;font-weight:700;color:var(--muted);text-align:center;max-width:110px}
+  .step.active .circle{background:var(--teal);color:#fff;border-color:var(--teal);box-shadow:0 0 0 5px rgba(14,127,127,.15)}
+  .step.active .lbl{color:var(--navy)}
+  .connector{width:34px;height:2px;background:#d8e0e8;margin:0 6px;position:relative;top:-10px}
+  .step.active + .connector{background:var(--teal)}
+
+  /* ===== Lists ===== */
+  .cond-list{list-style:none}
+  .cond-list li{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .cond-list li:last-child{border-bottom:none}
+  .cond-list .ic{width:20px;height:20px;border-radius:6px;flex-shrink:0;display:grid;place-items:center;font-size:12px;font-weight:800}
+  .ic.c{background:var(--amber-bg);color:var(--amber)}
+  .ic.g{background:var(--blue-bg);color:var(--blue)}
+  .ic.b{background:var(--red-bg);color:var(--red)}
+
+  .rec-box{background:linear-gradient(120deg,var(--green-bg),#f2fbf5);border:1px solid #bce7cd;
+    border-radius:var(--radius);padding:18px 20px;font-size:14px;color:#0c3a22}
+  .rec-box strong{color:#14532d}
+
+  .gap-box{background:var(--blue-bg);border:1px solid #c8d9f5;border-radius:var(--radius);padding:14px 18px;font-size:13px;color:#1e3a8a}
+
+  footer{margin-top:30px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#eef2f7;color:var(--navy)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ HEADER ============ -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">AR</div>
+      <div>
+        <h1>Clinker LC Approval Dashboard</h1>
+        <div class="sub">Akij Resource Ltd · ACCL — Import Letter of Credit Decision</div>
+      </div>
+    </div>
+    <div class="top-meta">
+      <div class="period">MRP Window: <strong>Sep – Nov 2026</strong> &nbsp;·&nbsp; Commodity: <strong>Clinker</strong></div>
+      <div class="date">Source: ACCL_Clinker_Purchase_Summary_18M_Integrated (Updated) · Prepared 10 Sep 2026</div>
+    </div>
+  </div>
+
+  <!-- ============ VERDICT ============ -->
+  <div class="verdict">
+    <div class="glow"></div>
+    <div class="verdict-badge"><span class="dot"></span> APPROVE</div>
+    <div class="summary">
+      <div class="s1">Open the LC now for <strong>50,000 MT</strong> of clinker at a landed cost of <strong>BDT 8,238/MT</strong> (BDT 41.19 Cr).</div>
+      <div class="s2">MRP shortage escalates to 224,993 MT by Nov-26; early booking locks a BDT 225/MT (~BDT 1.125 Cr) cost advantage versus replacement. Conditional on margin config, term &amp; bank confirmation.</div>
+    </div>
+    <div class="scorechip"><div class="n">81</div><div class="l">Weighted Score</div></div>
+  </div>
+
+  <!-- ============ KPI ============ -->
+  <div class="kpi-grid">
+    <div class="kpi accent">
+      <div class="k-label">Recommended LC Value (need-based)</div>
+      <div class="k-value">BDT 411.9M <small>(41.19 Cr)</small></div>
+      <div class="k-sub">≈ USD 2.53M CFR @ $50.5/MT · 50,000 MT</div>
+    </div>
+    <div class="kpi accent">
+      <div class="k-label">Proposed Cargo</div>
+      <div class="k-value">50,000 <small>MT</small></div>
+      <div class="k-sub">vs 224,993 MT open Nov-26 shortage</div>
+    </div>
+    <div class="kpi green">
+      <div class="k-label">Cost Advantage (Book Now)</div>
+      <div class="k-value">BDT 1.125 <small>Cr</small></div>
+      <div class="k-sub">BDT 225/MT · +2.73% vs not booked</div>
+    </div>
+    <div class="kpi amber">
+      <div class="k-label">Approval Chain (value band &gt; BDT 5 Cr)</div>
+      <div class="k-value" style="font-size:19px;line-height:1.3">Head → CFO → MD</div>
+      <div class="k-sub">Procurement Head + CFO + Managing Director</div>
+    </div>
+  </div>
+
+  <!-- ============ 5 DOMAINS ============ -->
+  <div class="section">
+    <div class="sec-head">
+      <h2>Five-Domain Decision Engine</h2>
+      <span class="hint">Equal weights 0.20 each · weighted score 81 / 100</span>
+    </div>
+    <div class="domains">
+      <div class="domain">
+        <div class="ring" style="--p:90;--c:#16a34a"><span class="val">90</span></div>
+        <h3>Inventory</h3>
+        <div class="note">Need fully open: 50,000 MT &lt;&lt; 224,993 MT shortage. No over-stock risk on this cargo.</div>
+        <span class="tag ok">Pass</span>
+      </div>
+      <div class="domain">
+        <div class="ring" style="--p:85;--c:#16a34a"><span class="val">85</span></div>
+        <h3>Procurement</h3>
+        <div class="note">Booked $1/MT below market ($50.5 vs $51.5). PI–PO variance not yet verified in sheet.</div>
+        <span class="tag cond">Verify PI</span>
+      </div>
+      <div class="domain">
+        <div class="ring" style="--p:80;--c:#16a34a"><span class="val">80</span></div>
+        <h3>Finance</h3>
+        <div class="note">Exposure 41.19 Cr vs ~BDT 2.5B ending cash. CCC −73 (favourable). Margin config not found.</div>
+        <span class="tag gap">Margin gap</span>
+      </div>
+      <div class="domain">
+        <div class="ring" style="--p:75;--c:#d97706"><span class="val">75</span></div>
+        <h3>Treasury</h3>
+        <div class="note">Single large cargo (41.19 Cr). At-Sight/UPAS pool mix unavailable — recommend UPAS.</div>
+        <span class="tag cond">Confirm term</span>
+      </div>
+      <div class="domain">
+        <div class="ring" style="--p:75;--c:#d97706"><span class="val">75</span></div>
+        <h3>Risk</h3>
+        <div class="note">Market rising (protects $1/MT). Freight/bunker &amp; demurrage exposure on blanket volume.</div>
+        <span class="tag cond">Monitor</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CHARTS: MRP & ECONOMICS ============ -->
+  <div class="section">
+    <div class="grid2">
+      <div class="card">
+        <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px">MRP Requirement vs Open Shortage</h2>
+        <div class="hint" style="font-size:12px;color:var(--muted);margin-bottom:6px">Sep – Nov 2026 (MT)</div>
+        <div class="chart-box"><canvas id="mrpChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px">Landed Cost &amp; Cargo Cost Impact</h2>
+        <div class="hint" style="font-size:12px;color:var(--muted);margin-bottom:6px">BDT per MT · 50,000 MT cargo</div>
+        <div class="chart-box"><canvas id="costChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="card">
+      <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px">18-Month Plan — Sales vs Production vs Purchase</h2>
+      <div class="hint" style="font-size:12px;color:var(--muted);margin-bottom:8px">Monthly (MT) · clinker requirement (purchase) follows production; Periods 13–18 repeat source date labels</div>
+      <div class="chart-box tall"><canvas id="sppChart"></canvas></div>
+      <div class="legend">
+        <span><i style="background:#2563eb"></i>Sales Plan</span>
+        <span><i style="background:#0e7f7f"></i>Production Plan</span>
+        <span><i style="background:#d97706"></i>Clinker Requirement (Purchase)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="grid2">
+      <div class="card">
+        <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px">18-Month Clinker Requirement &amp; Purchase</h2>
+        <div class="hint" style="font-size:12px;color:var(--muted);margin-bottom:6px">Monthly (MT) · blanket + spot stacked</div>
+        <div class="chart-box tall"><canvas id="planChart"></canvas></div>
+        <div class="legend">
+          <span><i style="background:#0e7f7f"></i>Blanket Purchase</span>
+          <span><i style="background:#f4b74a"></i>Spot Purchase</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px">18-Month Source Mix</h2>
+        <div class="hint" style="font-size:12px;color:var(--muted);margin-bottom:6px">Blanket vs Spot share of 1,388,079 MT</div>
+        <div class="chart-box tall" style="display:flex;align-items:center;justify-content:center">
+          <div style="width:240px;height:240px"><canvas id="mixChart"></canvas></div>
+        </div>
+        <div class="legend" style="justify-content:center">
+          <span><i style="background:#0e7f7f"></i>Blanket 988,785 MT (71.2%)</span>
+          <span><i style="background:#f4b74a"></i>Spot 399,294 MT (28.8%)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SPOT & BLANKET RISKS / BENEFITS ============ -->
+  <div class="section">
+    <div class="card">
+      <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:10px">Spot &amp; Blanket Purchase — Risks &amp; Benefits (ACCL RM Strategy)</h2>
+      <table>
+        <thead>
+          <tr><th style="width:150px">Purchase Type</th><th>Risks / Concerns</th><th>Benefits</th><th>Source Framing</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Blanket Purchase</strong></td>
+            <td>Inventory over-stock; higher demurrage risk; bunker price adjustment; forward-booking premium; price disadvantage if market declines.</td>
+            <td>Supply security; stable production planning; better negotiation power; price advantage if market rises.</td>
+            <td>988,784.74 MT = 71.23% of 18-month plan</td>
+          </tr>
+          <tr>
+            <td><strong>Spot Purchase</strong></td>
+            <td>Inventory shortage; market price increase; production continuity risk.</td>
+            <td>Lower purchase price; reduced price risk; supplier competition; better market response; warehouse utilisation.</td>
+            <td>399,294.08 MT = 28.77% of 18-month plan</td>
+          </tr>
+          <tr>
+            <td><strong>Hybrid / Mixed</strong></td>
+            <td>Requires monthly MRP, inventory &amp; market monitoring; incorrect mix can create excess stock or shortage.</td>
+            <td>Balances supply security and price flexibility; keeps part of requirement open for market opportunities.</td>
+            <td>Use source monthly quantities; review mix periodically</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ PURCHASE ECONOMICS TABLE ============ -->
+  <div class="section">
+    <div class="grid2">
+      <div class="card">
+        <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:10px">Purchase Economics — Proposed Cargo</h2>
+        <table>
+          <tr><td>Proposed Cargo Quantity</td><td class="num">50,000 MT</td></tr>
+          <tr><td>Clinker Purchase Price (CFR)</td><td class="num">$50.50 / MT</td></tr>
+          <tr><td>Current Market Rate (CFR)</td><td class="num">$51.50 / MT</td></tr>
+          <tr><td>Market Price Advantage</td><td class="num" style="color:var(--green)">$1.00 / MT</td></tr>
+          <tr><td>Landed Cost — Book Now</td><td class="num">BDT 8,238 / MT</td></tr>
+          <tr><td>Landed Cost — Not Booked</td><td class="num">BDT 8,463 / MT</td></tr>
+          <tr class="total"><td>Potential Landed Cost Increase</td><td class="num" style="color:var(--amber)">BDT 225 / MT (+2.73%)</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:10px">Financial Impact — 50,000 MT Cargo</h2>
+        <table>
+          <tr><td>Cost if Booked Now</td><td class="num">BDT 411,900,000</td></tr>
+          <tr><td>Cost if Not Booked</td><td class="num">BDT 423,150,000</td></tr>
+          <tr class="total"><td>Potential Additional Cost Avoided</td><td class="num" style="color:var(--green)">BDT 11,250,000 (1.125 Cr)</td></tr>
+        </table>
+        <div style="margin-top:14px" class="rec-box">
+          <strong>BOOK NOW.</strong> The 3-month MRP indicates a clinker requirement of 259,304 MT with shortage rising toward November.
+          Booking 50,000 MT now protects a BDT 225/MT advantage and strengthens material availability while reducing price &amp; freight/bunker exposure.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RISK IF NOT BOOK NOW ============ -->
+  <div class="section">
+    <div class="sec-head">
+      <h2>Risk if We Do Not Book Now</h2>
+      <span class="hint">Downside of delaying the LC / booking decision</span>
+    </div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th style="width:230px">Risk</th><th>Consequence</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Price increase</strong></td><td>If the market moves from USD 51.50 to USD 53.00, pay USD 2.50/MT more than today's offer.</td></tr>
+          <tr><td><strong>Loss of current price advantage</strong></td><td>Lose the opportunity to secure clinker at USD 50.50 while the market is already USD 51.50.</td></tr>
+          <tr><td><strong>Bunker / freight volatility</strong></td><td>Any increase in freight/bunker costs can push the replacement cargo price higher.</td></tr>
+          <tr><td><strong>Supply availability</strong></td><td>The same supplier/cargo may not remain available later, particularly if demand or supply tightens.</td></tr>
+          <tr><td><strong>Budget pressure</strong></td><td>A higher replacement price can negatively affect landed cost and procurement budget.</td></tr>
+          <tr><td><strong>Timing risk</strong></td><td>Delaying the booking may force purchase later at a less favourable market level.</td></tr>
+          <tr><td><strong>Competitive disadvantage</strong></td><td>Higher clinker cost can increase production cost versus competitors who secured material earlier.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ CASH FLOW & CCC ============ -->
+  <div class="section">
+    <div class="sec-head"><h2>Cash Flow &amp; Cash Conversion Cycle</h2><span class="hint">Liquidity headroom for LC exposure</span></div>
+    <div class="grid3">
+      <div class="kpi"><div class="k-label">Ending Cash</div><div class="k-value">BDT 2.50 <small>Bn</small></div><div class="k-sub">Forecast 2,504.3M · ample LC headroom</div></div>
+      <div class="kpi"><div class="k-label">Cash Conversion Cycle</div><div class="k-value">−73 <small>days</small></div><div class="k-sub">Negative CCC = favourable working capital</div></div>
+      <div class="kpi"><div class="k-label">DPO · DSO · DIO</div><div class="k-value" style="font-size:20px">140 · 28 · 39</div><div class="k-sub">Payables 140d / Receivables 28d / Inventory 39d</div></div>
+    </div>
+  </div>
+
+  <!-- ============ APPROVAL CHAIN ============ -->
+  <div class="section">
+    <div class="card">
+      <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:6px">Value-Banded Approval Chain</h2>
+      <div class="hint" style="font-size:12px;color:var(--muted);margin-bottom:16px">LC value BDT 41.19 Cr → highest band (Procur­ement Head + CFO + Managing Director)</div>
+      <div class="chain">
+        <div class="step"><div class="node"><div class="circle">1</div><div class="lbl">Procurement Officer</div></div></div>
+        <div class="connector"></div>
+        <div class="step active"><div class="node"><div class="circle">2</div><div class="lbl">Procurement Head</div></div></div>
+        <div class="connector"></div>
+        <div class="step active"><div class="node"><div class="circle">3</div><div class="lbl">CFO</div></div></div>
+        <div class="connector"></div>
+        <div class="step active"><div class="node"><div class="circle">4</div><div class="lbl">Managing Director</div></div></div>
+      </div>
+      <div style="margin-top:14px;font-size:12px;color:var(--muted)">
+        <span class="pill">&lt; BDT 5M → Procurement Officer</span>
+        <span class="pill">BDT 5M–50M → Head + CFO</span>
+        <span class="pill" style="background:var(--teal);color:#fff">&gt; BDT 50M → Head + CFO + MD</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CONDITIONS & DATA GAPS ============ -->
+  <div class="section">
+    <div class="grid2">
+      <div class="card">
+        <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:10px">Conditions to Close Before Opening</h2>
+        <ul class="cond-list">
+          <li><span class="ic c">!</span><span><strong>PI–PO match:</strong> confirm proforma invoice quantity (50,000 MT) &amp; price ($50.5/MT) reconcile against the purchase order before LC value is fixed.</span></li>
+          <li><span class="ic c">!</span><span><strong>Bank margin / provision:</strong> capture margin % from <em>com.tblLcProvisionPercentHeader/RowArc</em> — currently absent from source workbook.</span></li>
+          <li><span class="ic c">!</span><span><strong>LC term:</strong> recommend <strong>UPAS</strong> given cargo size &amp; to preserve cash; confirm against treasury At-Sight pool concentration (&gt;60% At-Sight → UPAS).</span></li>
+          <li><span class="ic c">!</span><span><strong>Issuing bank:</strong> select lowest total commission via <em>com.tblFormulaBankChargeArc</em>; no bank pre-assigned in source.</span></li>
+          <li><span class="ic c">!</span><span><strong>Duplicate guard:</strong> verify no ACTIVE LC already open on this clinker cargo before instructing the bank.</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:10px">Recommendation Summary</h2>
+        <table>
+          <tr><td>Verdict</td><td class="num" style="color:var(--green);font-weight:800">APPROVE (Conditional)</td></tr>
+          <tr><td>Weighted Score</td><td class="num">81 / 100</td></tr>
+          <tr><td>Open Value</td><td class="num">BDT 411.9M (41.19 Cr) · 50,000 MT</td></tr>
+          <tr><td>Recommended Term</td><td class="num">UPAS (confirm vs At-Sight pool)</td></tr>
+          <tr><td>Recommended Bank</td><td class="num">Lowest-commission bank (DWH)</td></tr>
+          <tr><td>Approval Chain</td><td class="num">Head → CFO → MD</td></tr>
+        </table>
+        <div class="gap-box" style="margin-top:14px">
+          <strong>Data-completeness gap:</strong> bank margin/provision configuration is not present in the source workbook.
+          This is flagged as an <em>iBOS data-completeness gap</em>, not a scoring pass. Final engine verdict must be logged via
+          <code>lc_run.py &lt;PO&gt;</code> against the DWH PO number.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>ACCL · Clinker LC Approval Dashboard — generated from ACCL_Clinker_Purchase_Summary_18M_Integrated (Updated).xlsx</span>
+    <span>LC Decision Orchestrator · 5-domain engine · traceable to input PO</span>
+  </footer>
+</div>
+
+<script>
+const NAVY='#0e2a47', TEAL='#0e7f7f', AMBER='#d97706', GREEN='#16a34a';
+Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";
+Chart.defaults.font.size=11.5;
+Chart.defaults.color='#5b6b7c';
+
+/* ---- MRP chart ---- */
+new Chart(document.getElementById('mrpChart'),{
+  type:'bar',
+  data:{labels:['September','October','November'],
+    datasets:[
+      {label:'MRP Requirement (MT)',data:[86591,86080,86633],backgroundColor:'rgba(14,127,127,.85)',borderRadius:6},
+      {label:'Open Shortage (MT)',data:[52280,138361,224993],backgroundColor:'rgba(217,119,6,.85)',borderRadius:6}
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom'}},
+    scales:{y:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()}}}}
+});
+
+/* ---- Cost chart ---- */
+new Chart(document.getElementById('costChart'),{
+  type:'bar',
+  data:{labels:['Landed Cost / MT','Cargo Cost (BDT Mn)'],
+    datasets:[
+      {label:'Book Now',data:[8238,411.9],backgroundColor:'rgba(22,163,74,.9)',borderRadius:6},
+      {label:'Not Booked',data:[8463,423.15],backgroundColor:'rgba(217,119,6,.8)',borderRadius:6}
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom'}},
+    scales:{y:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()}}}}
+});
+
+/* ---- 18M plan chart ---- */
+const planLabels=['Jul-26','Aug-26','Sep-26','Oct-26','Nov-26','Dec-26','Jan-27','Feb-27','Mar-27','Apr-27','May-27','Jun-27','P13','P14','P15','P16','P17','P18'];
+const blanket=[50000,50000,50000,50000,75998,94484,94484,86268,95634.24,91916.5,50000,50000,50000,50000,50000,50000,50000,50000];
+const spot=[31903.25,43713.75,40376,41403,0,0,0,0,0,0,45511,36011.25,47211.712,48000.448,45831.424,39915.904,42479.296,52930.048];
+new Chart(document.getElementById('planChart'),{
+  type:'bar',
+  data:{labels:planLabels,
+    datasets:[
+      {label:'Blanket',data:blanket,backgroundColor:TEAL,stack:'p',borderRadius:2},
+      {label:'Spot',data:spot,backgroundColor:'#f4b74a',stack:'p',borderRadius:2}
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{stacked:true,ticks:{maxRotation:60,minRotation:45,font:{size:9.5}}},y:{stacked:true,beginAtZero:true,ticks:{callback:v=>v.toLocaleString()}}}}
+});
+
+/* ---- Mix donut ---- */
+new Chart(document.getElementById('mixChart'),{
+  type:'doughnut',
+  data:{labels:['Blanket','Spot'],
+    datasets:[{data:[988784.74,399294.082],backgroundColor:[TEAL,'#f4b74a'],borderWidth:2,borderColor:'#fff'}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+    plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw.toLocaleString()} MT (${(c.raw/1388078.822*100).toFixed(1)}%)`}}}}
+});
+
+/* ---- Sales vs Production vs Purchase chart ---- */
+const sppSales=[160000,170500,172000,170500,186500,198000,230000,220000,200000,194500,185000,181000,170670,170670,182048,182048,187737,199115];
+const sppProd=[159500,182500,176000,178000,148000,184000,184000,168000,186240,179000,186000,167500,189312,190848,186624,175104,180096,200448];
+const sppReq=[81903.25,93713.75,90376,91403,75998,94484,94484,86268,95634.24,91916.5,95511,86011.25,97211.712,98000.448,95831.424,89915.904,92479.296,102930.048];
+new Chart(document.getElementById('sppChart'),{
+  type:'line',
+  data:{labels:planLabels,
+    datasets:[
+      {label:'Sales Plan',data:sppSales,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:2.5},
+      {label:'Production Plan',data:sppProd,borderColor:'#0e7f7f',backgroundColor:'rgba(14,127,127,.12)',fill:true,tension:.3,borderWidth:2,pointRadius:2.5},
+      {label:'Clinker Requirement (Purchase)',data:sppReq,borderColor:'#d97706',backgroundColor:'rgba(217,119,6,.12)',fill:true,tension:.3,borderWidth:2.5,pointRadius:3}
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false}},
+    scales:{x:{ticks:{maxRotation:60,minRotation:45,font:{size:9.5}}},y:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()}}}}
+});
+</script>
+</body>
+</html>
