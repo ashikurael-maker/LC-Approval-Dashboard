@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APFIL MasterBatch LC Approval Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  :root{
+    --bg:#0f1923; --card-bg:#1a2634; --border:#2a3a4a;
+    --text:#e0e6ed; --muted:#8899aa;
+    --blue:#3b82f6; --green:#22c55e; --red:#ef4444;
+    --amber:#f59e0b; --purple:#a855f7; --cyan:#06b6d4;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    padding:20px; line-height:1.45;
+  }
+  .wrap{max-width:1400px; margin:0 auto;}
+  header{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap:20px; flex-wrap:wrap; margin-bottom:18px;
+  }
+  h1{font-size:1.45rem; font-weight:700; letter-spacing:.3px;}
+  .subtitle{color:var(--muted); font-size:.85rem; margin-top:4px;}
+  .badge{
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(34,197,94,.12); color:var(--green);
+    border:1px solid rgba(34,197,94,.4); padding:6px 14px; border-radius:20px;
+    font-weight:700; font-size:.85rem;
+  }
+  .badge.amber{background:rgba(245,158,11,.12); color:var(--amber); border-color:rgba(245,158,11,.4);}
+  .badge.blue{background:rgba(59,130,246,.12); color:var(--blue); border-color:rgba(59,130,246,.4);}
+  .grid{display:grid; gap:16px;}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));}
+  .card{background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:16px 18px;}
+  .kpi .label{font-size:.72rem; text-transform:uppercase; letter-spacing:.8px; color:var(--muted);}
+  .kpi .value{font-size:1.6rem; font-weight:700; margin-top:6px;}
+  .kpi .sub{font-size:.74rem; color:var(--muted); margin-top:4px;}
+  .up{color:var(--green);} .down{color:var(--red);} .flat{color:var(--muted);}
+  h2{font-size:1.02rem; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px;}
+  h2 .dot{width:8px; height:8px; border-radius:50%; background:var(--blue);}
+  .row2{grid-template-columns:1.15fr .85fr;}
+  .row3{grid-template-columns:1fr 1fr;}
+  table{width:100%; border-collapse:collapse; font-size:.82rem;}
+  th{color:var(--muted); text-align:left; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.5px; padding:8px 8px; border-bottom:1px solid var(--border);}
+  td{padding:8px; border-bottom:1px solid rgba(42,58,74,.5); vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right; font-variant-numeric:tabular-nums;}
+  .pos{color:var(--green);} .neg{color:var(--red);}
+  .pill{display:inline-block; padding:2px 9px; border-radius:10px; font-size:.72rem; font-weight:700;}
+  .pill.g{background:rgba(34,197,94,.15); color:var(--green);}
+  .pill.a{background:rgba(245,158,11,.15); color:var(--amber);}
+  .pill.r{background:rgba(239,68,68,.15); color:var(--red);}
+  .chart-box{position:relative; height:260px;}
+  .chart-box.tall{height:320px;}
+  .score-hero{display:flex; gap:22px; align-items:center; flex-wrap:wrap;}
+  .gauge-wrap{position:relative; width:200px; height:200px; flex-shrink:0;}
+  .gauge-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .gauge-center .s{font-size:2.6rem; font-weight:800; color:var(--green);}
+  .gauge-center .v{font-size:.8rem; color:var(--green); font-weight:700;}
+  .domain-list{flex:1; min-width:260px;}
+  .domain{display:grid; grid-template-columns:150px 1fr 42px; gap:10px; align-items:center; margin-bottom:10px; font-size:.8rem;}
+  .domain .bar{height:10px; background:rgba(255,255,255,.06); border-radius:6px; overflow:hidden;}
+  .domain .fill{height:100%; border-radius:6px;}
+  .domain .sc{font-weight:700; text-align:right; font-variant-numeric:tabular-nums;}
+  .cond{background:rgba(245,158,11,.07); border-left:3px solid var(--amber); padding:10px 14px; border-radius:8px; margin-top:6px; font-size:.82rem;}
+  .cond b{color:var(--amber);}
+  .kv{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; font-size:.82rem;}
+  .kv .k{color:var(--muted);}
+  .notes{font-size:.78rem; color:var(--muted); margin-top:10px; font-style:italic;}
+  .risk-row{display:flex; gap:12px; align-items:stretch; margin-bottom:12px;}
+  .risk-box{flex:1; border:1px solid var(--border); border-radius:10px; padding:12px 14px;}
+  .risk-box.risks{border-left:3px solid var(--red);}
+  .risk-box.returns{border-left:3px solid var(--green);}
+  .risk-box h3{font-size:.78rem; text-transform:uppercase; letter-spacing:.6px; margin-bottom:10px;}
+  .risk-box.risks h3{color:var(--red);} .risk-box.returns h3{color:var(--green);}
+  .risk-box li{font-size:.8rem; margin:7px 0; padding-left:4px; list-style:none;}
+  .risk-box li::before{content:"•"; margin-right:8px; color:var(--muted);}
+  footer{text-align:center; color:var(--muted); font-size:.72rem; margin-top:26px; padding-top:14px; border-top:1px solid var(--border);}
+  @media (max-width:900px){ .row2,.row3{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <header>
+    <div>
+      <h1>MasterBatch LC Approval Dashboard — Akij Poly Fibre Industries Ltd (APFIL)</h1>
+      <div class="subtitle">Import LC Decision · <span class="badge blue">LC Type: At Sight</span> &nbsp; Source: <i>Final_Masterbatch LC Deck With 360 Risk Coverage</i> (Google Sheets) · Generated 28 Sep 2026</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="badge">VERDICT: APPROVE</div>
+      <div class="subtitle" style="margin-top:6px;">Composite Score <b style="color:var(--green);">82.4 / 100</b></div>
+    </div>
+  </header>
+
+  <!-- ===================== LC VALUE (TOP) ===================== -->
+  <section class="grid kpis" style="margin-bottom:16px;">
+    <div class="card kpi">
+      <div class="label">Total LC Value (USD)</div>
+      <div class="value">$66,910</div>
+      <div class="sub">≈ BDT 8.26 Mn (PI-in-BD)</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Gross Profit</div>
+      <div class="value">BDT 31.17 Mn</div>
+      <div class="sub up">+ BDT 508,800 vs budget</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Net Profit (After Tax)</div>
+      <div class="value">BDT 19.95 Mn</div>
+      <div class="sub up">+ BDT 368,415 · +1.88% vs budget</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Net Margin</div>
+      <div class="value">10.07%</div>
+      <div class="sub">Net Sales BDT 198.19 Mn (Nov-26)</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">COGS Saving</div>
+      <div class="value up">BDT 508,800</div>
+      <div class="sub">Rate locked at last PO price</div>
+    </div>
+  </section>
+
+  <!-- SKU-wise price -->
+  <section class="card" style="margin-bottom:16px;">
+    <h2><span class="dot"></span>SKU-wise Unit Price &amp; Value</h2>
+    <table>
+      <thead>
+        <tr><th>SKU / Material</th><th>Grade</th><th class="num">Qty (KG)</th><th class="num">Unit Price (USD/KG)</th><th class="num">Total (USD)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>BEIGE MASTERBATCH</td><td>EP-61729</td><td class="num">15,000</td><td class="num">$2.89</td><td class="num">$43,350</td></tr>
+        <tr><td>OXO BIODEGRADABLE MASTERBATCH PW</td><td>EP-OBD-1-PW</td><td class="num">4,000</td><td class="num">$5.89</td><td class="num">$23,560</td></tr>
+        <tr style="font-weight:700; background:rgba(59,130,246,.06);">
+          <td colspan="4">Total LC Value</td><td class="num" style="color:var(--blue);">$66,910.00</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="notes">Gross Profit BDT 31,169,916 · Net Profit BDT 19,948,895 · Current stock at hand 105 days · Lead time (last shipment) 70 days · Safety stock 45 days · Nov-26 sales plan 7.4 Mn bags.</div>
+  </section>
+
+  <!-- ===================== SCORING ===================== -->
+  <section class="card" style="margin-bottom:16px;">
+    <h2><span class="dot" style="background:var(--green);"></span>Decision Scoring — 5-Domain Weighted Model (equal 20% weights)</h2>
+    <div class="score-hero">
+      <div class="gauge-wrap">
+        <canvas id="gauge"></canvas>
+        <div class="gauge-center"><div class="s">82.4</div><div class="v">APPROVE</div></div>
+      </div>
+      <div class="domain-list">
+        <div class="domain"><span>Inventory / Need</span><div class="bar"><div class="fill" style="width:86%; background:var(--green);"></div></div><span class="sc">86</span></div>
+        <div class="domain"><span>Procurement / Price</span><div class="bar"><div class="fill" style="width:88%; background:var(--green);"></div></div><span class="sc">88</span></div>
+        <div class="domain"><span>Finance / Margin</span><div class="bar"><div class="fill" style="width:90%; background:var(--green);"></div></div><span class="sc">90</span></div>
+        <div class="domain"><span>Treasury / Cash &amp; Terms</span><div class="bar"><div class="fill" style="width:82%; background:var(--blue);"></div></div><span class="sc">82</span></div>
+        <div class="domain"><span>Risk</span><div class="bar"><div class="fill" style="width:66%; background:var(--amber);"></div></div><span class="sc">66</span></div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <div class="cond"><b>Conditions to record (non-blocking):</b> (1) Single-source customized product with no local alternative — maintain 45-day safety stock &amp; supplier SLA. (2) Geopolitical (Middle-East) + freight-hike exposure — price is locked at last PO rate, so monitor for the <i>next</i> order. (3) At-Sight term documented; Treasury may switch to UPAS if group cash constraints arise.</div>
+    </div>
+  </section>
+
+  <!-- ===================== SoD & RISK-RETURN ===================== -->
+  <section class="grid row2" style="margin-bottom:16px;">
+    <!-- SoD -->
+    <div class="card">
+      <h2><span class="dot"></span>Statement of Duty (SoD)</h2>
+      <table>
+        <thead><tr><th>Function</th><th>Statement of Duty</th></tr></thead>
+        <tbody>
+          <tr><td>MD</td><td>Timely final approval of major purchase, LC &amp; business proposals — no delays, business continuity.</td></tr>
+          <tr><td>CEO</td><td>Overall business alignment; timely review &amp; approval of major commercial, procurement &amp; operational decisions.</td></tr>
+          <tr><td>CFO / Finance</td><td>Financial viability, budget compliance, cash-flow availability, optimized Cash Conversion Cycle (CCC) &amp; timely financial review.</td></tr>
+          <tr><td>Procurement</td><td>Purchase within approved budget, in compliance with QC-approved specifications.</td></tr>
+          <tr><td>Treasury &amp; Commercial</td><td>LCs opened on time while securing the most competitive bank rates &amp; terms.</td></tr>
+          <tr><td>Sales</td><td>Finished goods sold at prices aligned with applicable COGS &amp; commercial strategy.</td></tr>
+          <tr><td>Inventory</td><td>Proper handling, storage &amp; control of materials and finished goods.</td></tr>
+          <tr><td>Distribution</td><td>Finished goods delivered on time, per the required delivery plan.</td></tr>
+          <tr><td>Factory</td><td>Monthly production target achieved with required quality &amp; operational efficiency.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Risk & Return -->
+    <div class="card">
+      <h2><span class="dot" style="background:var(--amber);"></span>Risk &amp; Return</h2>
+      <div class="risk-row">
+        <div class="risk-box risks"><h3>Risks</h3>
+          <li>1. Market vulnerable — Middle-East war issue</li>
+          <li>2. Price increasing vs last month (freight hike)</li>
+          <li>3. War escalating — material tight in market</li>
+          <li>4. Single source (customized product)</li>
+          <li>5. No local option</li>
+        </div>
+        <div class="risk-box returns"><h3>Returns</h3>
+          <li>1. Same price as LPO</li>
+          <li>2. Quality is ensured</li>
+          <li>3. Healthy stock to order now</li>
+        </div>
+      </div>
+      <div class="notes">Net risk is mitigated: price locked, quality assured, and ordering now secures supply ahead of the 115-day reorder point (70 lead + 45 safety) vs 105 days stock at hand.</div>
+    </div>
+  </section>
+
+  <!-- ===================== SHAREHOLDER VALUE ===================== -->
+  <section class="card" style="margin-bottom:16px;">
+    <h2><span class="dot" style="background:var(--purple);"></span>How this LC Ensures Shareholder Value</h2>
+    <div class="grid row3">
+      <div class="kv">
+        <span class="k">1.</span><span><b>Secure last PO price</b> — no escalation despite freight hike.</span>
+        <span class="k">2.</span><span><b>Cost saving:</b> COGS saved BDT 508,800 vs proposed budget.</span>
+        <span class="k">3.</span><span><b>Improve profitability:</b> forecast EBITDA + BDT 7.11 Mn vs budget.</span>
+        <span class="k">4.</span><span><b>Increase net income:</b> + 1.88% vs budget (BDT 368,415).</span>
+      </div>
+      <div class="kv">
+        <span class="k">5.</span><span><b>Ensure supply continuity</b> — timely booking &amp; LC opening reduce supply/production disruption risk, maintain safety stock.</span>
+        <span class="k">6.</span><span><b>Demand-based procurement</b> — aligned with the 18-month sales &amp; production plan.</span>
+        <span class="k">7.</span><span><b>Flexible purchase strategy</b> — 100% Spot Purchase as monthly consumed quantity is very low.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PNL & CASHFLOW & CCC ===================== -->
+  <section class="grid row2" style="margin-bottom:16px;">
+    <div class="card">
+      <h2><span class="dot" style="background:var(--cyan);"></span>Budgeted vs Proposed P&amp;L (Nov-26, BDT)</h2>
+      <table>
+        <thead><tr><th>Particular</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Change</th></tr></thead>
+        <tbody>
+          <tr><td>Net Sales Revenue</td><td class="num">198,187,000</td><td class="num">198,187,000</td><td class="num flat">—</td></tr>
+          <tr><td>Gross Margin</td><td class="num">30,661,116</td><td class="num">31,169,916</td><td class="num pos">+508,800</td></tr>
+          <tr><td>EBITDA</td><td class="num">35,660,975</td><td class="num">36,169,776</td><td class="num pos">+508,801</td></tr>
+          <tr><td>Earning Before Tax (EBT)</td><td class="num">27,007,559</td><td class="num">27,515,717</td><td class="num pos">+508,158</td></tr>
+          <tr style="font-weight:700; background:rgba(34,197,94,.05);"><td>Net Income After Tax</td><td class="num">19,580,481</td><td class="num">19,948,895</td><td class="num pos">+368,415 (+1.88%)</td></tr>
+        </tbody>
+      </table>
+      <div class="chart-box" style="margin-top:12px;"><canvas id="pnlChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h2><span class="dot" style="background:var(--cyan);"></span>Cash Flow Statement Effect (BDT)</h2>
+      <table>
+        <thead><tr><th>Particular</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Change</th></tr></thead>
+        <tbody>
+          <tr><td>Net Income</td><td class="num">19,580,481</td><td class="num">19,948,895</td><td class="num pos">+368,415</td></tr>
+          <tr><td>Decrease/(Increase) in Inventory</td><td class="num">(8,891,252)</td><td class="num">(7,865,149)</td><td class="num pos">+1,026,103</td></tr>
+          <tr><td>Increase/(Decrease) in AP</td><td class="num">(4,417,583)</td><td class="num">(5,500,836)</td><td class="num neg">−1,083,254</td></tr>
+          <tr><td>Increase/(Decrease) in Tax Provision</td><td class="num">7,427,079</td><td class="num">7,566,822</td><td class="num pos">+139,743</td></tr>
+          <tr style="font-weight:700; background:rgba(59,130,246,.05);"><td>Cash Flow from Operations</td><td class="num">80,575,303</td><td class="num">81,026,310</td><td class="num pos">+451,007</td></tr>
+        </tbody>
+      </table>
+      <h2 style="margin-top:16px;"><span class="dot" style="background:var(--cyan);"></span>Cash Operating Cycle (CCC, days)</h2>
+      <table>
+        <thead><tr><th>Metric</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Change</th></tr></thead>
+        <tbody>
+          <tr><td>Days Sales Outstanding (DSO)</td><td class="num">68.51</td><td class="num">68.51</td><td class="num flat">0.00</td></tr>
+          <tr><td>Days Payable Outstanding (DPO)</td><td class="num">63.87</td><td class="num">63.87</td><td class="num flat">0.00</td></tr>
+          <tr><td>Days Inventory Outstanding (DIO)</td><td class="num">119.87</td><td class="num">120.10</td><td class="num neg">+0.23</td></tr>
+          <tr style="font-weight:700;"><td>Cash Operating Cycle (CCC)</td><td class="num">124.51</td><td class="num">124.74</td><td class="num neg">+0.23</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== COSTING ===================== -->
+  <section class="card" style="margin-bottom:16px;">
+    <h2><span class="dot" style="background:var(--red);"></span>Current Offer Costing — Landed Cost (BDT)</h2>
+    <div class="grid row3">
+      <div>
+        <table>
+          <thead><tr><th>OXO (4,000 KG)</th><th class="num">Amount</th></tr></thead>
+          <tbody>
+            <tr><td>PI (USD 23,560)</td><td class="num">—</td></tr>
+            <tr><td>Total in BD @124</td><td class="num">2,909,660</td></tr>
+            <tr><td>Insurance (ICC-C)</td><td class="num">11,343</td></tr>
+            <tr><td>LC Opening Commission</td><td class="num">8,729</td></tr>
+            <tr><td>Swift + VAT, Credit Report, Misc</td><td class="num">6,950</td></tr>
+            <tr><td>Doc Acceptance @0.15%</td><td class="num">7,068</td></tr>
+            <tr><td>Total Custom Duty (25%)</td><td class="num">1,617,898</td></tr>
+            <tr><td>Inland + C&amp;F + Port</td><td class="num">56,500</td></tr>
+            <tr style="font-weight:700; background:rgba(239,68,68,.05);"><td>Apx. Landed Cost</td><td class="num">4,618,148</td></tr>
+            <tr><td>Per KG</td><td class="num">1,154.54</td></tr>
+            <tr style="color:var(--green);"><td>Net Landed Cost (per KG)</td><td class="num">3,829,503 (957.38)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <table>
+          <thead><tr><th>Beige (15,000 KG)</th><th class="num">Amount</th></tr></thead>
+          <tbody>
+            <tr><td>PI (USD 43,350)</td><td class="num">—</td></tr>
+            <tr><td>Total in BD @123</td><td class="num">5,353,725</td></tr>
+            <tr><td>Insurance (ICC-C)</td><td class="num">20,863</td></tr>
+            <tr><td>LC Opening Commission</td><td class="num">16,061</td></tr>
+            <tr><td>Swift + VAT, Credit Report, Misc</td><td class="num">6,950</td></tr>
+            <tr><td>Doc Acceptance @0.15%</td><td class="num">13,005</td></tr>
+            <tr><td>Total Custom Duty (15%)</td><td class="num">2,154,037</td></tr>
+            <tr><td>Inland + C&amp;F + Port</td><td class="num">159,375</td></tr>
+            <tr style="font-weight:700; background:rgba(239,68,68,.05);"><td>Apx. Landed Cost</td><td class="num">7,724,016</td></tr>
+            <tr><td>Per KG</td><td class="num">514.93</td></tr>
+            <tr style="color:var(--green);"><td>Net Landed Cost (per KG)</td><td class="num">6,390,420 (426.03)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="chart-box tall"><canvas id="costChart"></canvas></div>
+        <div class="kv" style="margin-top:8px;">
+          <span class="k">Total Apx. Landed</span><span class="num">BDT 12,342,164</span>
+          <span class="k">Total Net Landed</span><span class="num">BDT 10,219,923</span>
+        </div>
+      </div>
+    </div>
+    <div class="notes">VAT/AT/AIT rebate applied to derive net landed cost. Rate same as last PO — requested to keep the same rate for this order.</div>
+  </section>
+
+  <!-- ===================== 18-MONTH PLAN + PROCUREMENT ===================== -->
+  <section class="grid row2" style="margin-bottom:16px;">
+    <div class="card">
+      <h2><span class="dot"></span>18-Month Sales vs Production &amp; Procurement Plan</h2>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+        <span class="badge amber">Purchase Plan: 100% Spot</span>
+        <span class="badge blue">Term Contract / Spot (no blanket)</span>
+      </div>
+      <div class="chart-box tall"><canvas id="planChart"></canvas></div>
+      <div class="notes">Procurement plan (right axis) = MasterBatch requirement: Beige 4,600 KG + Oxo 600 KG = 5,200 KG/month.</div>
+    </div>
+    <div class="card">
+      <h2><span class="dot" style="background:var(--amber);"></span>Inventory Position &amp; Lead Time</h2>
+      <div class="chart-box" style="height:180px;"><canvas id="invChart"></canvas></div>
+      <div class="kv" style="margin-top:12px;">
+        <span class="k">Current Stock at Hand</span><span><b>105 days</b></span>
+        <span class="k">Lead Time (last shipment)</span><span><b>70 days</b></span>
+        <span class="k">Safety Stock</span><span><b>45 days</b></span>
+        <span class="k">Reorder Point (LT + SS)</span><span><b>115 days</b></span>
+        <span class="k">Coverage Gap</span><span class="neg"><b>−10 days → order now</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 18-MONTH MRP ===================== -->
+  <section class="card">
+    <h2><span class="dot" style="background:var(--purple);"></span>18-Month MRP — MasterBatch Requirement (KG/month)</h2>
+    <div class="grid row2">
+      <div class="chart-box tall"><canvas id="mrppChart"></canvas></div>
+      <div>
+        <table>
+          <thead><tr><th>Material</th><th class="num">14-Mo Consumption (KG)</th><th class="num">18-Mo Forward Total (KG)</th><th class="num">Steady Rate (KG/mo)</th></tr></thead>
+          <tbody>
+            <tr><td>Master Batch-Beige EP-61729</td><td class="num">42,986</td><td class="num">56,684</td><td class="num">3,224</td></tr>
+            <tr><td>Master Batch-OXOPW EP-OBD</td><td class="num">7,824</td><td class="num">10,317</td><td class="num">587</td></tr>
+          </tbody>
+        </table>
+        <div class="notes" style="margin-top:12px;">MRP forward plan (Sep 26 → Feb 28) drives the LC: Beige ≈3,224 KG/mo · Oxo ≈587 KG/mo. The LC (15,000 + 4,000 KG) covers ≈3.3 months of Beige and ≈6.8 months of Oxo requirement.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Source: <i>Final_Masterbatch LC Deck With 360 Risk Coverage</i> (Google Sheets, 8 tabs) · Prepared by LC Decision Orchestrator · Weighted 5-domain score (20% each) → <b>APPROVE 82.4</b> · All figures traceable to the source deck.
+  </footer>
+</div>
+
+<script>
+const months=['Sep 26','Oct 26','Nov 26','Dec 26','Jan 27','Feb 27','Mar 27','Apr 27','May 27','Jun 27','Jul 27','Aug 27','Sep 27','Oct 27','Nov 27','Dec 27','Jan 28','Feb 28'];
+const sales=[7.4,7.5,7.4,7.45,7.5,6.95,6.7,7.25,6.85,7.4,7.4,7.45,7.4,7.5,7.4,7.45,7.5,6.55];
+const prod=[7.4,7.5,7.6,7.65,7.5,6.95,6.5,7.25,6.65,7.4,7.885569,7.376822,7.631195,7.376822,7.631195,7.631195,7.631195,5.850583];
+const beige=Array(18).fill(4600);   // procurement plan - Beige
+const oxo=Array(18).fill(600);      // procurement plan - Oxo
+const mrpBeige=[3112,3029,3091,3091,2845,2960,3322,2901,3317,3224,3224,3224,3224,3224,3224,3224,3224,3224];
+const mrpOxo=[566,551,563,563,518,539,605,528,604,587,587,587,587,587,587,587,587,587];
+
+Chart.defaults.color='#8899aa';
+Chart.defaults.borderColor='#2a3a4a';
+Chart.defaults.font.family="'Segoe UI',Roboto,sans-serif";
+
+// Gauge
+new Chart(document.getElementById('gauge'),{
+  type:'doughnut',
+  data:{labels:['Score','Remaining'],datasets:[{data:[82.4,17.6],backgroundColor:['#22c55e','rgba(255,255,255,.06)'],borderWidth:0}]},
+  options:{cutout:'78%',rotation:-90,circumference:180,plugins:{legend:{display:false},tooltip:{enabled:false}},maintainAspectRatio:false}
+});
+
+// PNL grouped bar
+new Chart(document.getElementById('pnlChart'),{
+  type:'bar',
+  data:{
+    labels:['Gross Margin','EBITDA','EBT','Net Income'],
+    datasets:[
+      {label:'Budget',data:[30.66,35.66,27.01,19.58],backgroundColor:'#3b82f6',borderRadius:4},
+      {label:'Proposed',data:[31.17,36.17,27.52,19.95],backgroundColor:'#22c55e',borderRadius:4}
+    ]
+  },
+  options:{plugins:{legend:{position:'top',labels:{boxWidth:12}}},scales:{y:{ticks:{callback:v=>'BDT '+v+'M'}}},maintainAspectRatio:false}
+});
+
+// Costing comparison
+new Chart(document.getElementById('costChart'),{
+  type:'bar',
+  data:{
+    labels:['OXO (4,000 KG)','Beige (15,000 KG)'],
+    datasets:[
+      {label:'Apx. Landed (BDT Mn)',data:[4.62,7.72],backgroundColor:'#ef4444',borderRadius:4},
+      {label:'Net Landed (BDT Mn)',data:[3.83,6.39],backgroundColor:'#22c55e',borderRadius:4}
+    ]
+  },
+  options:{plugins:{legend:{position:'top',labels:{boxWidth:12}}},scales:{y:{ticks:{callback:v=>'BDT '+v+'M'}}},maintainAspectRatio:false}
+});
+
+// 18-month plan + procurement plan (dual axis)
+new Chart(document.getElementById('planChart'),{
+  type:'bar',
+  data:{
+    labels:months,
+    datasets:[
+      {type:'line',label:'Sales Plan (Mn bags)',data:sales,borderColor:'#3b82f6',backgroundColor:'#3b82f6',tension:.3,pointRadius:2,yAxisID:'y'},
+      {type:'line',label:'Production Plan (Mn bags)',data:prod,borderColor:'#22c55e',backgroundColor:'#22c55e',tension:.3,pointRadius:2,yAxisID:'y'},
+      {type:'bar',label:'Procurement – Beige (KG)',data:beige,backgroundColor:'#f59e0b',yAxisID:'y1',stack:'p',borderRadius:0},
+      {type:'bar',label:'Procurement – Oxo (KG)',data:oxo,backgroundColor:'#a855f7',yAxisID:'y1',stack:'p',borderRadius:2}
+    ]
+  },
+  options:{plugins:{legend:{position:'top',labels:{boxWidth:12}}},scales:{y:{position:'left',ticks:{callback:v=>v+'M'},title:{display:true,text:'Bags (Mn)',color:'#8899aa'}},y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v.toLocaleString()},title:{display:true,text:'KG',color:'#8899aa'}}},maintainAspectRatio:false}
+});
+
+// Inventory position (horizontal)
+new Chart(document.getElementById('invChart'),{
+  type:'bar',
+  data:{
+    labels:['Reorder Point (LT + SS)','Current Stock at Hand','Lead Time (last shipment)','Safety Stock'],
+    datasets:[{label:'Days',data:[115,105,70,45],backgroundColor:['#3b82f6','#22c55e','#f59e0b','#a855f7'],borderRadius:4}]
+  },
+  options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x+' days'}}},scales:{x:{beginAtZero:true,max:140,grid:{color:'rgba(255,255,255,.06)'}},y:{grid:{display:false}}},maintainAspectRatio:false}
+});
+
+// 18-month MRP forward plan
+new Chart(document.getElementById('mrppChart'),{
+  type:'bar',
+  data:{
+    labels:months,
+    datasets:[
+      {label:'Beige EP-61729 (KG)',data:mrpBeige,backgroundColor:'#f59e0b',borderRadius:2},
+      {label:'Oxo EP-OBD (KG)',data:mrpOxo,backgroundColor:'#a855f7',borderRadius:2}
+    ]
+  },
+  options:{plugins:{legend:{position:'top',labels:{boxWidth:12}}},scales:{y:{ticks:{callback:v=>v.toLocaleString()},title:{display:true,text:'KG',color:'#8899aa'}}},maintainAspectRatio:false}
+});
+</script>
+</body>
+</html>
