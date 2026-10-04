@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Akij Poly Fibre (APFIL) — LDPE LC Approval Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  :root{
+    --bg:#0f1923; --card:#1a2634; --card2:#15202d; --border:#2a3a4a;
+    --text:#e0e6ed; --muted:#8899aa;
+    --blue:#3b82f6; --green:#22c55e; --red:#ef4444; --amber:#f59e0b;
+    --purple:#a855f7; --cyan:#06b6d4; --teal:#14b8a6;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    padding:22px; line-height:1.45;
+  }
+  .wrap{max-width:1280px; margin:0 auto;}
+
+  /* Header */
+  .header{
+    background:linear-gradient(135deg,#1a2634 0%, #15202d 60%, #12212e 100%);
+    border:1px solid var(--border); border-radius:14px; padding:22px 26px;
+    display:flex; flex-wrap:wrap; gap:20px; align-items:center; justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .header .brand h1{font-size:1.35rem; font-weight:700; letter-spacing:.3px;}
+  .header .brand .sub{color:var(--muted); font-size:.85rem; margin-top:4px;}
+  .badge{
+    display:inline-block; padding:5px 12px; border-radius:20px; font-size:.72rem;
+    font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+  }
+  .badge.approve{background:rgba(34,197,94,.15); color:#4ade80; border:1px solid rgba(34,197,94,.4);}
+  .badge.spot{background:rgba(59,130,246,.15); color:#60a5fa; border:1px solid rgba(59,130,246,.4);}
+  .meta{display:flex; flex-direction:column; gap:6px; text-align:right;}
+  .meta .row{font-size:.8rem; color:var(--muted);}
+  .meta .row b{color:var(--text);}
+
+  .section{margin-bottom:20px;}
+  .section-title{
+    font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:1.2px;
+    color:var(--cyan); margin:0 0 12px 2px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .section-title::before{content:''; width:10px; height:10px; border-radius:2px; background:var(--cyan);}
+
+  .grid{display:grid; gap:14px;}
+  .g-cards{grid-template-columns:repeat(4,1fr);}
+  .g-2{grid-template-columns:1.6fr 1fr;}
+  .g-3{grid-template-columns:repeat(3,1fr);}
+  .g-21{grid-template-columns:1fr 1fr;}
+
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px;
+  }
+  .card h3{font-size:.8rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.6px; margin-bottom:10px;}
+  .kpi{font-size:1.7rem; font-weight:800; letter-spacing:-.5px;}
+  .kpi.small{font-size:1.25rem;}
+  .kpi .unit{font-size:.8rem; color:var(--muted); font-weight:500; margin-left:3px;}
+  .delta{font-size:.78rem; margin-top:6px; font-weight:600;}
+  .up{color:#4ade80;} .down{color:#f87171;} .flat{color:var(--muted);}
+  .sub-note{font-size:.74rem; color:var(--muted); margin-top:6px;}
+
+  /* Score gauge */
+  .score-panel{display:flex; gap:22px; align-items:center; flex-wrap:wrap;}
+  .gauge-wrap{position:relative; width:190px; height:130px; flex:0 0 auto;}
+  .gauge-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; transform:translateY(14px);}
+  .gauge-center .val{font-size:2rem; font-weight:800;}
+  .gauge-center .lbl{font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px;}
+  .score-dims{flex:1; min-width:280px;}
+  .dim{display:grid; grid-template-columns:150px 1fr 44px; gap:10px; align-items:center; padding:7px 0; border-bottom:1px solid rgba(42,58,74,.5);}
+  .dim:last-child{border-bottom:none;}
+  .dim .name{font-size:.78rem; color:var(--text);}
+  .dim .w{font-size:.66rem; color:var(--muted);}
+  .bar{height:8px; background:#0f1923; border-radius:6px; overflow:hidden; border:1px solid var(--border);}
+  .bar .fill{height:100%; border-radius:6px;}
+  .dim .s{font-size:.85rem; font-weight:700; text-align:right;}
+
+  table{width:100%; border-collapse:collapse; font-size:.82rem;}
+  th,td{padding:9px 10px; text-align:left; border-bottom:1px solid var(--border);}
+  th{color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.6px; font-weight:600;}
+  td.num, th.num{text-align:right; font-variant-numeric:tabular-nums;}
+  tr:last-child td{border-bottom:none;}
+  .t-foot td{font-weight:700; border-top:2px solid var(--border); color:#fff;}
+  .pos{color:#4ade80; font-weight:600;} .neg{color:#f87171; font-weight:600;}
+
+  .risk-col{display:flex; flex-direction:column; gap:10px;}
+  .risk-item{display:flex; gap:10px; align-items:flex-start; background:var(--card2); border:1px solid var(--border); border-radius:9px; padding:10px 12px; font-size:.82rem;}
+  .risk-item .dot{width:9px; height:9px; border-radius:50%; margin-top:5px; flex:0 0 auto;}
+  .r-risky .dot{background:var(--red);} .r-return .dot{background:var(--green);}
+  .risk-item span{color:var(--text);}
+
+  .value-list{list-style:none; display:flex; flex-direction:column; gap:10px;}
+  .value-list li{display:flex; gap:11px; font-size:.85rem; align-items:flex-start;}
+  .value-list li::before{content:'✓'; color:#4ade80; font-weight:800; flex:0 0 auto;}
+
+  .chart-box{position:relative; height:260px;}
+  .chart-box.tall{height:300px;}
+
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  .pill{background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:.78rem;}
+  .pill b{color:var(--cyan); font-size:.95rem; display:block;}
+
+  .footer{margin-top:22px; padding-top:14px; border-top:1px solid var(--border); font-size:.72rem; color:var(--muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;}
+  .two-col{columns:2; column-gap:26px;}
+  @media (max-width:900px){
+    .g-cards{grid-template-columns:repeat(2,1fr);}
+    .g-2,.g-3,.g-21{grid-template-columns:1fr;}
+    .two-col{columns:1;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">
+      <h1>Akij Poly Fibre (APFIL) — LC Approval Dashboard</h1>
+      <div class="sub">Raw Material: <b>Polymer Ethylene (LDPE)</b> · SKU <b>7019EC</b> · 360° Risk Coverage Deck · Basis: November 2026</div>
+      <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="badge approve">Score 83.0 / 100 — APPROVE</span>
+        <span class="badge spot">LC Type: Deferred 60 Days</span>
+        <span class="badge spot">100% Spot Purchase</span>
+      </div>
+    </div>
+    <div class="meta">
+      <div class="row">LC Reference Material <b>7019EC — LDPE</b></div>
+      <div class="row">Quantity <b>48,000 KG</b> (2 × 24T containers)</div>
+      <div class="row">Price <b>$1.70 / kg</b> (Last PO $1.95)</div>
+      <div class="row">Total LC (PI) <b>$81,600</b></div>
+      <div class="row">Payment <b>Deferred 60 Days</b> — no UPAS (ample cash)</div>
+      <div class="row">Requirement Date <b>26 Dec 2026</b></div>
+    </div>
+  </div>
+
+  <!-- 1. LC VALUE + SKU + GROSS/NET PROFIT -->
+  <div class="section">
+    <div class="section-title">1 · Total LC Value — SKU-wise Unit Price · Gross & Net Profit</div>
+    <div class="grid g-cards">
+      <div class="card">
+        <h3>Total LC Value (PI)</h3>
+        <div class="kpi">$81,600<span class="unit">USD</span></div>
+        <div class="sub-note">≈ ৳1.01 Cr @ 123.5 BDT/USD (commodity value)</div>
+      </div>
+      <div class="card">
+        <h3>Full Landed Cost</h3>
+        <div class="kpi small">৳1.33 Cr</div>
+        <div class="sub-note">Gross ৳276.87/kg · Net (post VAT/AT/AIT rebate) ৳228.13/kg</div>
+      </div>
+      <div class="card">
+        <h3>Gross Profit (Nov P&L)</h3>
+        <div class="kpi" style="color:#4ade80;">৳3.07 Cr</div>
+        <div class="delta up">Margin 15.48% · ▲ ৳15,309 vs budget</div>
+      </div>
+      <div class="card">
+        <h3>Net Profit (Nov P&L)</h3>
+        <div class="kpi" style="color:#4ade80;">৳1.96 Cr</div>
+        <div class="delta up">Margin 9.89% · ▲ ৳11,223 vs budget</div>
+      </div>
+    </div>
+
+    <div class="grid g-2" style="margin-top:14px;">
+      <div class="card">
+        <h3>SKU-wise Unit Price (7019EC — Polymer Ethylene / LDPE)</h3>
+        <table>
+          <thead><tr><th>SKU</th><th>Description</th><th class="num">Qty (KG)</th><th class="num">Last PO $/kg</th><th class="num">Price $/kg</th><th class="num">Total $</th></tr></thead>
+          <tbody>
+            <tr><td>7019EC</td><td>Polymer Ethylene (LDPE)</td><td class="num">48,000</td><td class="num">1.95</td><td class="num">1.70</td><td class="num">81,600</td></tr>
+            <tr class="t-foot"><td colspan="5">Total LC Value</td><td class="num">$81,600</td></tr>
+          </tbody>
+        </table>
+        <table style="margin-top:12px;">
+          <thead><tr><th>Rate Basis</th><th class="num">Budget BDT/kg</th><th class="num">Proposed BDT/kg</th><th class="num">Saving/kg</th><th class="num">Saving %</th></tr></thead>
+          <tbody>
+            <tr><td>Net landed (VAT &amp; AIT excl.)</td><td class="num">267.24</td><td class="num">228.00</td><td class="num pos">39.24</td><td class="num pos">−14.7%</td></tr>
+            <tr><td>Gross landed (VAT incl.)</td><td class="num">315.24</td><td class="num">276.00</td><td class="num pos">39.24</td><td class="num pos">−12.5%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Stock Position &amp; Timing</h3>
+        <div class="pill-row">
+          <div class="pill">Current Stock at Hand<b>68 days</b></div>
+          <div class="pill">Lead Time<b>35 days</b></div>
+          <div class="pill">Safety Stock<b>45 days</b></div>
+        </div>
+        <div class="sub-note" style="font-size:.85rem; line-height:1.6;">
+          <b style="color:#f59e0b;">Coverage gap:</b> 68d on-hand &lt; (45d safety + 35d lead = 80d). The LC bridges a
+          <b>12-day shortfall</b> and preserves safety stock. Material reaches 26 Nov 2026, enters production in December.
+          Rate is <b style="color:#4ade80;">lower than the last PO</b>; supplier sourced the product from an alternate country.
+        </div>
+        <div class="sub-note" style="margin-top:8px;">Sales Plan November 2026: <b>7.40 million bags</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SCORING MODEL -->
+  <div class="section">
+    <div class="section-title">2 · LC Approval Scoring (Weighted Risk-Return)</div>
+    <div class="card">
+      <div class="score-panel">
+        <div class="gauge-wrap">
+          <canvas id="gauge"></canvas>
+          <div class="gauge-center">
+            <div class="val" id="scoreVal">83.0</div>
+            <div class="lbl">APPROVE</div>
+          </div>
+        </div>
+        <div class="score-dims" id="scoreDims"></div>
+      </div>
+      <div class="sub-note" style="margin-top:12px; border-top:1px solid var(--border); padding-top:10px;">
+        Verdict bands: <b style="color:#4ade80;">≥75 APPROVE</b> · <b style="color:#f59e0b;">60–74 CONDITIONAL</b> ·
+        <b style="color:#f87171;">40–59 HOLD</b> · <b style="color:#ef4444;">&lt;40 REJECT</b>.
+        Weighted score <b>83.0</b> ⇒ <b style="color:#4ade80;">APPROVE</b> — price-beating & supply-securing, with deferred-60-day payment preserving cash (no UPAS cost).
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SOD + RISK-RETURN -->
+  <div class="section">
+    <div class="section-title">3 · Statement of Duty (SoD) & Risk — Return</div>
+    <div class="grid g-21">
+      <div class="card">
+        <h3>Statement of Duty (SoD)</h3>
+        <table>
+          <thead><tr><th>Function</th><th>Statement of Duty</th></tr></thead>
+          <tbody id="sodBody"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Risk vs Return</h3>
+        <div class="grid g-21">
+          <div>
+            <h3 style="color:#f87171;">Risks</h3>
+            <div class="risk-col" id="riskCol"></div>
+          </div>
+          <div>
+            <h3 style="color:#4ade80;">Returns</h3>
+            <div class="risk-col" id="returnCol"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. SHAREHOLDER VALUE -->
+  <div class="section">
+    <div class="section-title">4 · How This LC Ensures Shareholder Value</div>
+    <div class="card">
+      <ul class="value-list" id="shareVal"></ul>
+    </div>
+  </div>
+
+  <!-- 5. PNL + CASHFLOW + CCC -->
+  <div class="section">
+    <div class="section-title">5 · P&amp;L · Cash Flow · Cash Operating Cycle (CCC)</div>
+    <div class="grid g-2">
+      <div class="card">
+        <h3>Budget vs Proposed P&amp;L (BDT) — without sales price hike</h3>
+        <table>
+          <thead><tr><th>Particulars</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Change</th></tr></thead>
+          <tbody id="pnlBody"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>P&amp;L Comparison</h3>
+        <div class="chart-box"><canvas id="pnlChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid g-3" style="margin-top:14px;">
+      <div class="card">
+        <h3>Cash Flow from Operations (BDT)</h3>
+        <table>
+          <thead><tr><th>Particulars</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Change</th></tr></thead>
+          <tbody id="cfBody"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Cash Operating Cycle (CCC) — days</h3>
+        <table>
+          <thead><tr><th>Particulars</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Change</th></tr></thead>
+          <tbody id="cccBody"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>CCC (days)</h3>
+        <div class="chart-box"><canvas id="cccChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. COSTING -->
+  <div class="section">
+    <div class="section-title">6 · Current Costing — LDPE Landed Cost Build-up (48,000 KG)</div>
+    <div class="grid g-2">
+      <div class="card">
+        <h3>Landed Cost Components (BDT)</h3>
+        <table>
+          <thead><tr><th>Component</th><th class="num">Amount (BDT)</th><th class="num">BDT/kg</th></tr></thead>
+          <tbody id="costBody"></tbody>
+          <tfoot id="costFoot"></tfoot>
+        </table>
+        <div class="sub-note" style="margin-top:8px;">
+          <b style="color:var(--cyan);">Customs detail:</b> Assessable value ৳1.02 Cr · CD 5% = ৳5.12 L · VAT 15% = ৳16.13 L ·
+          AIT 5% = ৳5.12 L · AT 2% = ৳2.15 L · TTI ৳28.51 L → Total duty &amp; taxes <b>৳28.60 L</b>.
+        </div>
+      </div>
+      <div class="card">
+        <h3>Cost Composition</h3>
+        <div class="chart-box"><canvas id="costChart"></canvas></div>
+        <div class="sub-note" style="margin-top:4px;">
+          Net landed = Gross landed − (VAT + AT + AIT rebate ৳23.40 L) = <b>৳1.10 Cr (৳228.13/kg)</b>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. 18-MONTH PLAN / MRP -->
+  <div class="section">
+    <div class="section-title">7 · 18-Month Procurement Plan & MRP — LDPE Requirement</div>
+    <div class="pill-row">
+      <div class="pill">LDPE 18-mo requirement<b>169,043 kg</b></div>
+      <div class="pill">Avg monthly consumption<b>~9,391 kg</b></div>
+      <div class="pill">This LC cover<b>~5.1 months</b></div>
+      <div class="pill">Procurement mode<b>100% Spot</b></div>
+      <div class="pill">Last 14-mo consumption<b>128,191 kg</b></div>
+    </div>
+    <div class="card">
+      <h3>Monthly LDPE Requirement — 18-month forward (kg)</h3>
+      <div class="chart-box tall"><canvas id="mrpChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Source: Final_LDPE LC Deck With 360 Risk Coverage.xlsx (SOD · Risk & Return · 18 Months Plan · 18 Months MRP · Why This LC Business Case Now · Ensuring Shareholders Value · PNL · Costing LDPE)</span>
+    <span>Generated by SCM-ARL · Oct 2026</span>
+  </div>
+</div>
+
+<script>
+/* ============ Single source of truth ============ */
+const FX = 123.5;
+const QTY = 48000;
+
+// ---- Scoring model ----
+const scoreDims = [
+  { name:"Price vs Budget",      w:"25%", s:95, color:"#22c55e", note:"$1.70 vs last PO $1.95 (−12.8%); net landed 228.0 vs budget 267.24 (−14.7%)" },
+  { name:"Profitability Impact", w:"20%", s:90, color:"#22c55e", note:"Gross margin +৳15,309 · Net +৳11,223 · net margin 9.9%" },
+  { name:"Stock Coverage",       w:"20%", s:60, color:"#f59e0b", note:"68d on-hand < 80d needed (45 safety + 35 lead) → 12-day shortfall" },
+  { name:"Risk Mitigation Value",w:"15%", s:85, color:"#22c55e", note:"Secures supply amid ME war escalation, no alt grades, not local" },
+  { name:"Cash Flow / Liquidity",w:"10%", s:80, color:"#22c55e", note:"Deferred 60-day payment (avoids UPAS extra cost); ample cash; CFO +৳1.37 Cr positive" },
+  { name:"Demand & Sourcing",    w:"10%", s:85, color:"#22c55e", note:"Aligned to 18-mo plan (169 t); single approved grade 7019EC, 100% spot" },
+];
+const weights = [0.25,0.20,0.20,0.15,0.10,0.10];
+const totalScore = scoreDims.reduce((a,d,i)=>a + d.s*weights[i], 0);
+
+// ---- SoD ----
+const sod = [
+  ["MD","Ensure timely final approval of major purchase, LC, and business proposals to avoid delays and ensure business continuity."],
+  ["CEO","Ensure overall business alignment and provide timely review and approval of major commercial, procurement, and operational decisions."],
+  ["CFO / Finance","Ensure financial viability, budget compliance, cash flow availability, optimized Cash Conversion Cycle (CCC), and timely financial review of major purchase and LC decisions."],
+  ["Procurement","Ensure materials are purchased within the approved budget and in compliance with QC-approved specifications."],
+  ["Treasury & Commercial","Ensure LCs are opened on time while securing the most competitive bank rates and terms."],
+  ["Sales","Ensure finished goods are sold at prices aligned with the applicable COGS and commercial strategy."],
+  ["Inventory","Ensure proper handling, storage, and control of materials and finished goods."],
+  ["Distribution","Ensure finished goods are delivered to customers on time and as per the required delivery plan."],
+  ["Factory","Ensure the monthly production target is achieved while maintaining required quality and operational efficiency."],
+];
+
+// ---- Risk & Return ----
+const risks = [
+  "Current market is vulnerable to Middle East war issue",
+  "Product unavailability — supplier arranged from another country",
+  "War is escalating again & material will be tight in the market",
+  "No other approved grades",
+  "Locally not available right now",
+];
+const returns = [
+  "Ensure product availability",
+  "Quality is ensured",
+  "Having healthy stock to order now",
+];
+
+// ---- Shareholder value ----
+const shareVal = [
+  "Secure Product — product is unavailable in the market; the LC locks supply.",
+  "Cost Saving — Net-profit level margin improves by ৳11,223 (BDT).",
+  "Ensure Supply Continuity — timely booking & LC opening reduce supply/production disruption risk and maintain safety stock.",
+  "Demand-Based Procurement — aligned with the 18-month sales & production plan.",
+  "Flexible Purchase Strategy — 100% spot purchase (monthly consumed quantity is low).",
+];
+
+// ---- P&L ----
+const pnl = [
+  ["Net Sales Revenue",198187000,198187000,0],
+  ["Gross Margin",30661116,30676425,15309],
+  ["Income from Operation (EBITDA)",35660975,35676284,15309],
+  ["Earning Before Tax (EBT)",27007559,27023040,15481],
+  ["Net Income After Tax",19580481,19591704,11223],
+];
+
+// ---- Cash flow ----
+const cashflow = [
+  ["Net Income",19580549,19591704,11155],
+  ["Decrease/(Increase) in Inventory",-8890960,-8843437,47523],
+  ["Increase/(Decrease) in AP",-4417782,-4450176,-32394],
+  ["Increase/(Decrease) in Tax Provision",7427105,7431336,4231],
+  ["Cash Flow from Operations",13698912,13729427,30515],
+];
+
+// ---- CCC ----
+const ccc = [
+  ["Days Sales Outstanding (DSO)",68.51,68.51,0],
+  ["Days Payable Outstanding (DPO)",63.87,63.87,0],
+  ["Days Inventory Outstanding (DIO)",119.87,119.88,0.01],
+  ["Cash Operating Cycle (CCC)",124.51,124.52,0.01],
+];
+
+// ---- Costing ----
+const costComponents = [
+  ["Commodity value (PI in BDT @123.5)",10077600,209.95],
+  ["Insurance (ICC-C + VAT + Stamp)",39262.25,0.82],
+  ["Bank charges (LC comm., swift, VAT, credit report, doc accept., misc)",61662.80,1.28],
+  ["Custom duty & taxes (CD 5%, VAT 15%, AIT 5%, AT 2%, TTI)",2860054.39,59.58],
+  ["Inland logistics (transport, C&F, port & shipping, empty return, unloading)",251000,5.23],
+];
+const grossLanded = costComponents.reduce((a,c)=>a+c[1],0); // 13,289,579.44
+const netLanded = 10950073.12;
+
+// ---- MRP LDPE forward 18 months ----
+const mrpLabels = ["Sep 26","Oct 26","Nov 26","Dec 26","Jan 27","Feb 27","Mar 27","Apr 27","May 27","Jun 27","Jul 27","Aug 27","Sep 27","Oct 27","Nov 27","Dec 27","Jan 28","Feb 28"];
+const mrpData = [9280.23,9034.41,9218.36,9217.95,8485.02,8827.12,9908.15,8651.31,9891.69,9614.32,9614.32,9614.32,9614.32,9614.32,9614.32,9614.32,9614.32,9614.32];
+
+/* ============ Helpers ============ */
+const fmt = n => n.toLocaleString('en-IN');
+const cr = n => (n/10000000).toFixed(2)+' Cr';
+const lac = n => (n/100000).toFixed(2)+' L';
+const sign = n => n>0 ? `▲ ${fmt(n)}` : n<0 ? `▼ ${fmt(Math.abs(n))}` : '—';
+
+/* ============ Render score dims ============ */
+const dimEl = document.getElementById('scoreDims');
+scoreDims.forEach(d=>{
+  const row = document.createElement('div'); row.className='dim';
+  row.innerHTML = `
+    <div class="name">${d.name}<div class="w">weight ${d.w}</div></div>
+    <div class="bar"><div class="fill" style="width:${d.s}%; background:${d.color};"></div></div>
+    <div class="s" style="color:${d.color};">${d.s}</div>`;
+  dimEl.appendChild(row);
+});
+document.getElementById('scoreVal').textContent = totalScore.toFixed(1);
+
+/* ============ Gauge ============ */
+const gaugeColor = totalScore>=75 ? '#22c55e' : totalScore>=60 ? '#f59e0b' : '#ef4444';
+new Chart(document.getElementById('gauge'), {
+  type:'doughnut',
+  data:{ datasets:[{ data:[totalScore, 100-totalScore], backgroundColor:[gaugeColor,'#2a3a4a'], borderWidth:0 }]},
+  options:{ rotation:-90, circumference:180, cutout:'74%', plugins:{legend:{display:false}, tooltip:{enabled:false}}, responsive:true, maintainAspectRatio:false }
+});
+
+/* ============ SoD table ============ */
+document.getElementById('sodBody').innerHTML = sod.map(r=>`<tr><td style="white-space:nowrap; color:var(--cyan); font-weight:600;">${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+
+/* ============ Risk / Return ============ */
+document.getElementById('riskCol').innerHTML = risks.map((r,i)=>`<div class="risk-item r-risky"><span class="dot"></span><span>${i+1}. ${r}</span></div>`).join('');
+document.getElementById('returnCol').innerHTML = returns.map((r,i)=>`<div class="risk-item r-return"><span class="dot"></span><span>${i+1}. ${r}</span></div>`).join('');
+
+/* ============ Shareholder value ============ */
+document.getElementById('shareVal').innerHTML = shareVal.map(v=>`<li><span>${v}</span></li>`).join('');
+
+/* ============ P&L table ============ */
+document.getElementById('pnlBody').innerHTML = pnl.map((r,i)=>{
+  const last = i===pnl.length-1;
+  const cls = last ? 'class="t-foot"' : '';
+  return `<tr ${cls}><td>${r[0]}</td><td class="num">${fmt(r[1])}</td><td class="num">${fmt(r[2])}</td><td class="num ${r[3]>0?'pos':''}">${sign(r[3])}</td></tr>`;
+}).join('');
+
+/* ============ Cashflow table ============ */
+document.getElementById('cfBody').innerHTML = cashflow.map((r,i)=>{
+  const last = i===cashflow.length-1;
+  const cls = last ? 'class="t-foot"' : '';
+  return `<tr ${cls}><td>${r[0]}</td><td class="num">${fmt(r[1])}</td><td class="num">${fmt(r[2])}</td><td class="num ${r[3]>0?'pos':'neg'}">${sign(r[3])}</td></tr>`;
+}).join('');
+
+/* ============ CCC table ============ */
+document.getElementById('cccBody').innerHTML = ccc.map((r,i)=>{
+  const last = i===ccc.length-1;
+  const cls = last ? 'class="t-foot"' : '';
+  return `<tr ${cls}><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td></tr>`;
+}).join('');
+
+/* ============ Costing table ============ */
+document.getElementById('costBody').innerHTML = costComponents.map(r=>`<tr><td>${r[0]}</td><td class="num">${fmt(r[1])}</td><td class="num">${r[2].toFixed(2)}</td></tr>`).join('');
+document.getElementById('costFoot').innerHTML = `
+  <tr class="t-foot"><td>APX. Landed Cost (gross)</td><td class="num">${fmt(grossLanded)}</td><td class="num">${(grossLanded/QTY).toFixed(2)}</td></tr>
+  <tr class="t-foot"><td>Net APX. Landed Cost</td><td class="num">${fmt(netLanded)}</td><td class="num">${(netLanded/QTY).toFixed(2)}</td></tr>`;
+
+/* ============ Charts ============ */
+Chart.defaults.color = '#8899aa';
+Chart.defaults.borderColor = '#2a3a4a';
+Chart.defaults.font.family = "'Segoe UI', sans-serif";
+
+// P&L chart
+new Chart(document.getElementById('pnlChart'), {
+  type:'bar',
+  data:{ labels:pnl.map(r=>r[0].replace(' (','\n(')),
+    datasets:[
+      { label:'Budget', data:pnl.map(r=>r[1]), backgroundColor:'#3b82f6' },
+      { label:'Proposed', data:pnl.map(r=>r[2]), backgroundColor:'#22c55e' },
+    ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'top'}},
+    scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{callback:v=>'৳'+(v/10000000)+'Cr'}} } }
+});
+
+// CCC chart
+new Chart(document.getElementById('cccChart'), {
+  type:'bar',
+  data:{ labels:ccc.map(r=>r[0].split('(')[1]?.replace(')','')||r[0]),
+    datasets:[
+      { label:'Budget', data:ccc.map(r=>r[1]), backgroundColor:'#3b82f6' },
+      { label:'Proposed', data:ccc.map(r=>r[2]), backgroundColor:'#22c55e' },
+    ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'top'}}, scales:{ y:{ticks:{callback:v=>v+'d'}} } }
+});
+
+// Cost doughnut
+new Chart(document.getElementById('costChart'), {
+  type:'doughnut',
+  data:{ labels:costComponents.map(r=>r[0]),
+    datasets:[{ data:costComponents.map(r=>r[1]),
+      backgroundColor:['#3b82f6','#06b6d4','#a855f7','#f59e0b','#14b8a6'], borderWidth:1, borderColor:'#0f1923' }]},
+  options:{ responsive:true, maintainAspectRatio:false, cutout:'55%',
+    plugins:{legend:{position:'right', labels:{boxWidth:10, font:{size:10}}}} }
+});
+
+// MRP chart — with value labels shown above each bar
+const mrpValueLabels = {
+  id:'mrpValueLabels',
+  afterDatasetsDraw(chart){
+    const {ctx} = chart;
+    const meta = chart.getDatasetMeta(0);
+    ctx.save();
+    ctx.font = "600 9px 'Segoe UI', sans-serif";
+    ctx.fillStyle = '#e0e6ed';
+    ctx.textAlign = 'center';
+    meta.data.forEach((bar, i) => {
+      ctx.fillText(Math.round(mrpData[i]).toLocaleString('en-IN'), bar.x, bar.y - 5);
+    });
+    ctx.restore();
+  }
+};
+new Chart(document.getElementById('mrpChart'), {
+  type:'bar',
+  data:{ labels:mrpLabels,
+    datasets:[{ label:'LDPE requirement (kg)', data:mrpData, backgroundColor:'#3b82f6', borderRadius:3 }]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    layout:{ padding:{ top: 18 } },
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString('en-IN')+' kg'}}},
+    scales:{ x:{ticks:{font:{size:9}, maxRotation:60}}, y:{ticks:{callback:v=>v.toLocaleString('en-IN')}} } },
+  plugins:[mrpValueLabels]
+});
+</script>
+</body>
+</html>
