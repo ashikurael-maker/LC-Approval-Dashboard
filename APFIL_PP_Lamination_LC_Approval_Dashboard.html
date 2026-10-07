@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APFIL · PP Lamination Grade LC Approval Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0f1420; --panel:#171d2e; --panel2:#1d2436; --line:#2a3350;
+    --txt:#e8ecf6; --muted:#8b96b3; --accent:#4f8cff; --good:#27c281; --warn:#f5a623; --bad:#f0516d;
+    --gold:#ffd166; --upas:#3ec9ff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--txt); font-family:'Segoe UI',system-ui,-apple-system,sans-serif; padding:24px; line-height:1.45;}
+  .wrap{max-width:1240px; margin:0 auto;}
+  h1{font-size:22px; font-weight:700; letter-spacing:.2px;}
+  h2{font-size:13px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); margin-bottom:12px; font-weight:600;}
+  .sub{color:var(--muted); font-size:13px;}
+
+  .topbar{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:20px; flex-wrap:wrap;}
+  .badge{display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:4px 10px; border-radius:20px; border:1px solid var(--line); color:var(--muted);}
+  .badge .dot{width:8px; height:8px; border-radius:50%; background:var(--good);}
+  .tag-arms{color:var(--accent); font-weight:600;}
+
+  .grid{display:grid; gap:16px;}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g5{grid-template-columns:repeat(5,1fr);}
+  @media(max-width:900px){ .g2,.g3,.g5{grid-template-columns:1fr;} }
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px;}
+  .card h3{font-size:13px; color:var(--muted); font-weight:600; margin-bottom:14px; text-transform:uppercase; letter-spacing:.8px;}
+
+  .hero{display:grid; grid-template-columns:auto 1fr auto; gap:28px; align-items:center; background:linear-gradient(135deg,#182036,#131a2b); border:1px solid #2c3a63;}
+  .gauge{position:relative; width:150px; height:150px;}
+  .gauge .ring{transform:rotate(-90deg);}
+  .gauge .track{fill:none; stroke:#2a3350; stroke-width:13;}
+  .gauge .fill{fill:none; stroke:url(#grad); stroke-width:13; stroke-linecap:round; transition:stroke-dashoffset 1s ease;}
+  .gauge .val{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .gauge .val b{font-size:38px; font-weight:800;}
+  .gauge .val span{font-size:11px; color:var(--muted);}
+  .hero-main h1{margin-bottom:4px;}
+  .verdict-pill{display:inline-block; font-size:13px; font-weight:800; letter-spacing:1px; padding:5px 14px; border-radius:8px; margin:8px 0 10px;}
+  .vp-conditional{background:rgba(245,166,35,.15); color:var(--warn); border:1px solid rgba(245,166,35,.4);}
+  .vp-approve{background:rgba(39,194,129,.15); color:var(--good); border:1px solid rgba(39,194,129,.4);}
+  .hero-stats{display:flex; flex-direction:column; gap:12px;}
+  .hs{min-width:220px;}
+  .hs .lbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.7px;}
+  .hs .num{font-size:20px; font-weight:700;}
+
+  .domain{background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:14px;}
+  .domain .dhead{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
+  .domain .dname{font-size:13px; font-weight:600;}
+  .domain .dscore{font-size:22px; font-weight:800;}
+  .bar{height:7px; background:#232c46; border-radius:6px; overflow:hidden; margin-bottom:9px;}
+  .bar i{display:block; height:100%; border-radius:6px;}
+  .domain .note{font-size:11.5px; color:var(--muted); line-height:1.5;}
+  .note b{color:var(--txt);}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.6px; padding:8px 10px; border-bottom:1px solid var(--line);}
+  td{padding:9px 10px; border-bottom:1px solid #202840; vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right; font-variant-numeric:tabular-nums; font-weight:600;}
+  .pos{color:var(--good);} .neg{color:var(--bad);} .warn-t{color:var(--warn);}
+  .muted{color:var(--muted);}
+
+  .chip{display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; border:1px solid var(--line); margin:2px 2px 0 0;}
+  .chip-cond{background:rgba(245,166,35,.12); border-color:rgba(245,166,35,.35); color:var(--warn);}
+  .chip-gap{background:rgba(240,81,109,.12); border-color:rgba(240,81,109,.35); color:var(--bad);}
+  .chip-ok{background:rgba(39,194,129,.12); border-color:rgba(39,194,129,.35); color:var(--good);}
+  .chip-info{background:rgba(79,140,255,.12); border-color:rgba(79,140,255,.35); color:var(--accent);}
+
+  .kv{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; font-size:13px;}
+  .kv .k{color:var(--muted);}
+  .kv .v{font-weight:600; text-align:right;}
+
+  .cond-item{display:flex; gap:10px; padding:10px 0; border-bottom:1px solid #202840;}
+  .cond-item:last-child{border-bottom:none;}
+  .cond-idx{width:22px; height:22px; border-radius:50%; background:rgba(39,194,129,.15); color:var(--good); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; flex-shrink:0;}
+  .cond-body b{font-size:13px;} .cond-body p{font-size:12.5px; color:var(--muted); margin-top:2px;}
+
+  .step{display:flex; gap:12px; padding:11px 0; border-bottom:1px solid #202840; font-size:13px;}
+  .step:last-child{border-bottom:none;}
+  .step-idx{min-width:26px; height:26px; border-radius:7px; background:rgba(79,140,255,.14); color:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; flex-shrink:0;}
+  .step b{font-size:13px;} .step p{font-size:12px; color:var(--muted); margin-top:2px;}
+
+  .risk-row{display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-bottom:1px solid #202840; font-size:13px;}
+  .risk-row:last-child{border-bottom:none;}
+  .risk-ico{width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0;}
+
+  .chart-box{position:relative; height:300px;}
+  .legend{font-size:12px; color:var(--muted); margin-top:8px;}
+
+  .foot{color:var(--muted); font-size:11.5px; margin-top:22px; padding-top:14px; border-top:1px solid var(--line);}
+
+  @page{ size: A4; margin: 10mm; }
+  @media print{
+    *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+    body{ background:var(--bg) !important; }
+    .card{ break-inside:avoid; }
+    .grid{ break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div>
+      <h1>APFIL · PP Lamination Grade <span style="color:var(--accent)">LC Approval Dashboard</span></h1>
+      <div class="sub">Akij Poly Fibre Industries Ltd. — LC Decision Orchestrator · 5-domain scoring · 360° risk coverage</div>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+      <span class="badge"><span class="dot"></span> UPAS · HSBC / MTB</span>
+      <span class="badge">FX 124.00 BDT/USD</span>
+      <span class="badge">Arrival: Nov-26 · Use: Dec-26</span>
+    </div>
+  </div>
+
+  <!-- Hero verdict -->
+  <div class="card hero" style="margin-bottom:16px;">
+    <div class="gauge">
+      <svg class="ring" width="150" height="150" viewBox="0 0 150 150">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3ec9ff"/>
+            <stop offset="100%" stop-color="#27c281"/>
+          </linearGradient>
+        </defs>
+        <circle class="track" cx="75" cy="75" r="64"/>
+        <circle class="fill" cx="75" cy="75" r="64" stroke-dasharray="402.1" stroke-dashoffset="56.3"/>
+      </svg>
+      <div class="val"><b>86</b><span>/ 100</span></div>
+    </div>
+    <div class="hero-main">
+      <div class="sub" style="margin-bottom:2px;">Material · PP Lamination Grade (Lotte 670M) · Korea origin · item 11112 · Plant: Akij Polyfibre</div>
+      <h1>198,000 KG PP Lamination — <span class="tag-arms">USD 1.60/KG</span> (CFR)</h1>
+      <span class="verdict-pill vp-approve">APPROVE</span>
+      <div style="font-size:13px; color:var(--muted); max-width:560px;">
+        Weighted score <b style="color:var(--txt)">86.0/100</b> with <b style="color:var(--good)">0 blockers</b> and
+        <b style="color:var(--good)">no open conditions</b>. Rate <b style="color:var(--good)">−13% vs last PO</b>
+        (USD 1.60 vs 1.84) and <b style="color:var(--good)">−12.6% vs budget landed rate</b> (BDT 214.94 vs 246.00/KG) —
+        a ~BDT 6.15M COGS saving. Local alternative is 160–200% costlier. Term fixed at <b style="color:var(--upas)">UPAS</b>,
+        bank <b style="color:var(--txt)">HSBC / MTB</b>, PO to be raised after MD approval.
+      </div>
+    </div>
+    <div class="hero-stats hs">
+      <div><div class="lbl">LC Opening Amount</div><div class="num">USD 316,800</div><div class="muted" style="font-size:11px;">BDT 39.28M</div></div>
+      <div><div class="lbl">Contract Value (PI)</div><div class="num">USD 316,800</div><div class="muted" style="font-size:11px;">198,000 KG × USD 1.60</div></div>
+      <div><div class="lbl">Approval Flow</div><div class="num" style="font-size:14px;">MD → PO → LC (UPAS)</div></div>
+    </div>
+  </div>
+
+  <!-- Recommendation strip -->
+  <div class="grid g5" style="margin-bottom:16px;">
+    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Recommended Value</div><div style="font-size:20px;font-weight:700;">USD 316,800</div><div class="muted" style="font-size:11px;">= 198,000 KG × USD 1.60</div></div>
+    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Term</div><div style="font-size:20px;font-weight:700;color:var(--upas);">UPAS</div><div class="muted" style="font-size:11px;">cash-friendly at 126d CCC</div></div>
+    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Bank</div><div style="font-size:20px;font-weight:700;">HSBC / MTB</div><div class="muted" style="font-size:11px;">competitive rate to be locked</div></div>
+    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Landed Cost (net)</div><div style="font-size:20px;font-weight:700;color:var(--good);">BDT 214.94/KG</div><div class="muted" style="font-size:11px;">vs budget 246.00 · −31.06</div></div>
+    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">COGS Saving (this LC)</div><div style="font-size:20px;font-weight:700;color:var(--good);">BDT 6.15M</div><div class="muted" style="font-size:11px;">−31.06/KG × 198,000 KG</div></div>
+  </div>
+
+  <!-- 5-domain scoring -->
+  <div class="card" style="margin-bottom:16px;">
+    <h2>Five-Domain Scoring — 86.0 weighted (equal 20% weights)</h2>
+    <div class="grid g2">
+      <div class="chart-box"><canvas id="radar"></canvas></div>
+      <div class="grid g2" style="align-content:start; gap:10px;">
+        <div class="domain">
+          <div class="dhead"><span class="dname">📦 Inventory</span><span class="dscore" style="color:var(--good);">85</span></div>
+          <div class="bar"><i style="width:85%;background:var(--good);"></i></div>
+          <div class="note"><b>Need confirmed.</b> Arrival Nov-26 for Dec-26 production; 66 days stock vs 45 safety; ~131 MT/mo lamination draw within 18-mo plan.</div>
+        </div>
+        <div class="domain">
+          <div class="dhead"><span class="dname">🛒 Procurement</span><span class="dscore" style="color:var(--good);">90</span></div>
+          <div class="bar"><i style="width:90%;background:var(--good);"></i></div>
+          <div class="note"><b>Price BEATING last PO.</b> USD 1.60 vs 1.84 (−13.0%). Landed BDT 214.94 vs 246.00 budget (−12.6%). PI present (USD 316,800). PO to be raised post-approval (standard flow).</div>
+        </div>
+        <div class="domain">
+          <div class="dhead"><span class="dname">💰 Finance</span><span class="dscore" style="color:var(--good);">82</span></div>
+          <div class="bar"><i style="width:82%;background:var(--good);"></i></div>
+          <div class="note"><b>Strong business case.</b> NPAT +196K, CFO +218K, CCC ~126d stable. UPAS preserves cash. Margin % to be confirmed with HSBC/MTB at opening.</div>
+        </div>
+        <div class="domain">
+          <div class="dhead"><span class="dname">🏦 Treasury</span><span class="dscore" style="color:var(--good);">88</span></div>
+          <div class="bar"><i style="width:88%;background:var(--good);"></i></div>
+          <div class="note"><b>UPAS confirmed</b> — cash-friendly at 126d CCC / DPO 66d. Bank HSBC/MTB (strong partners). FX 124.00 locked at opening.</div>
+        </div>
+        <div class="domain" style="grid-column:1/-1;">
+          <div class="dhead"><span class="dname">🛡️ Risk</span><span class="dscore" style="color:var(--good);">85</span></div>
+          <div class="bar"><i style="width:85%;background:var(--good);"></i></div>
+          <div class="note">Lotte (Korea) = tier-1 petrochemical, low default risk; Korea low geopolitical corridor. <b>Local rate 160–200% higher</b> → import strongly justified. Residual risk: Middle-East conflict → freight/energy, mitigated by locking USD 1.60 now.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pre-opening checklist & route -->
+  <div class="grid g2" style="margin-bottom:16px;">
+    <div class="card">
+      <h2>Pre-opening checklist (routine execution)</h2>
+      <div class="cond-item"><div class="cond-idx">1</div><div class="cond-body"><b>Lock PI at USD 1.60/KG at PO creation (post-MD-approval)</b><p>Owner: Procurement · Freeze the −13%-vs-last-PO rate before the supplier revises on volatility.</p></div></div>
+      <div class="cond-item"><div class="cond-idx">2</div><div class="cond-body"><b>Confirm LC margin / provision % with HSBC / MTB</b><p>Owner: Finance + Treasury · Quantify BDT cash to fund and select the more competitive bank rate before opening.</p></div></div>
+      <div class="cond-item"><div class="cond-idx">3</div><div class="cond-body"><b>Confirm customs clearance &amp; Dec-26 consumption timeline</b><p>Owner: Inventory + Commercial · Ensure Nov-26 arrival clears for Dec-26 use with safety stock maintained.</p></div></div>
+    </div>
+    <div class="card">
+      <h2>Route &amp; timeline</h2>
+      <div class="step"><div class="step-idx">1</div><div><b>MD approval</b><p>Final sign-off on this deck.</p></div></div>
+      <div class="step"><div class="step-idx">2</div><div><b>PO creation</b><p>Procurement raises PO — 198,000 KG × USD 1.60, PI locked.</p></div></div>
+      <div class="step"><div class="step-idx">3</div><div><b>LC opening (UPAS)</b><p>Treasury opens with HSBC / MTB at best rate.</p></div></div>
+      <div class="step"><div class="step-idx">4</div><div><b>Shipment → Nov-26 arrival</b><p>Customs clearance &amp; inland transport.</p></div></div>
+      <div class="step"><div class="step-idx">5</div><div><b>Dec-26 consumption</b><p>Material into production; safety stock maintained.</p></div></div>
+      <div style="margin-top:14px;">
+        <span class="chip chip-ok">APPROVE · 86/100</span>
+        <span class="chip chip-ok">0 blockers</span>
+        <span class="chip chip-info">UPAS · HSBC/MTB</span>
+        <span class="chip chip-info">Korea origin</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Business case + P&L -->
+  <div class="grid g2" style="margin-bottom:16px;">
+    <div class="card">
+      <h2>Business case (from 18-month workbook)</h2>
+      <div class="kv">
+        <span class="k">Material / Qty</span><span class="v">PP Lamination Grade (Lotte 670M) · 198,000 KG</span>
+        <span class="k">Price (CFR)</span><span class="v">USD 1.60/KG</span>
+        <span class="k">Last PO price</span><span class="v">USD 1.84/KG</span>
+        <span class="k">Contract / PI value</span><span class="v">USD 316,800</span>
+        <span class="k">LC opening (BDT)</span><span class="v">BDT 39.28M @ 124</span>
+        <span class="k">Landed cost (net)</span><span class="v">BDT 214.94/KG (apx)</span>
+        <span class="k">Budget landed rate</span><span class="v">BDT 246.00/KG (VAT &amp; AIT excl)</span>
+        <span class="k">Price advantage</span><span class="v" style="color:var(--good);">−13.0% vs last PO · −12.6% vs budget</span>
+        <span class="k">COGS saving</span><span class="v" style="color:var(--good);">BDT 6.15M (−31.06/KG × 198,000)</span>
+        <span class="k">Sales plan (Nov, bags)</span><span class="v">7,450,000 bags</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>November P&amp;L impact (budget vs proposed rate)</h2>
+      <table>
+        <tr><th>Metric</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Δ</th></tr>
+        <tr><td>Net sales revenue (BDT)</td><td class="num">198,991,750</td><td class="num">198,991,750</td><td class="num muted">—</td></tr>
+        <tr><td>Gross margin (BDT)</td><td class="num">30,001,539</td><td class="num">30,273,203</td><td class="num pos">+271,664</td></tr>
+        <tr><td>EBITDA (BDT)</td><td class="num">35,001,398</td><td class="num">35,273,063</td><td class="num pos">+271,664</td></tr>
+        <tr><td>EBT (BDT)</td><td class="num">26,402,833</td><td class="num">26,673,884</td><td class="num pos">+271,051</td></tr>
+        <tr><td>Net income after tax (BDT)</td><td class="num">19,142,054</td><td class="num">19,338,566</td><td class="num pos">+196,512</td></tr>
+        <tr><td>Cash flow from operations</td><td class="num">35,048,121</td><td class="num">35,266,439</td><td class="num pos">+218,318</td></tr>
+        <tr><td>Cash conversion cycle (days)</td><td class="num">126.07</td><td class="num">126.19</td><td class="num muted">+0.12</td></tr>
+      </table>
+      <div class="muted" style="font-size:11.5px; margin-top:10px;">
+        Material arrives Nov-26 and is consumed in Dec-26, so the full ~BDT 6.15M landed-cost saving materialises in
+        December; the November P&amp;L already shows +BDT 196K net income and +BDT 218K operating cash at the proposed rate.
+      </div>
+    </div>
+  </div>
+
+  <!-- Landed cost + shareholder value -->
+  <div class="grid g2" style="margin-bottom:16px;">
+    <div class="card">
+      <h2>Landed-cost build (BDT)</h2>
+      <table>
+        <tr><th>Component</th><th class="num">Amount</th></tr>
+        <tr><td>PI (USD 316,800 @ 124)</td><td class="num">39,600,000</td></tr>
+        <tr><td>Insurance (ICC-C + VAT + stamp)</td><td class="num">154,252</td></tr>
+        <tr><td>LC opening commission</td><td class="num">118,800</td></tr>
+        <tr><td>Document acceptance + Swift + credit + misc</td><td class="num">101,990</td></tr>
+        <tr><td>Custom duty &amp; taxes (CD/AT/AIT/ATV)</td><td class="num">11,277,744</td></tr>
+        <tr><td>Inland transport + C&amp;F + port + empty + unloading</td><td class="num">535,375</td></tr>
+        <tr><td><b>Approx. landed cost (gross)</b></td><td class="num"><b>51,788,161</b></td></tr>
+        <tr><td><b>Net landed cost (excl. VAT &amp; AIT)</b></td><td class="num pos"><b>42,557,684</b></td></tr>
+      </table>
+      <div class="muted" style="font-size:11.5px; margin-top:10px;">
+        Net landed = BDT 214.94/KG vs budget BDT 246.00/KG. AIT/AT reclaimable on import (AT 2%, ATV 0%).
+      </div>
+    </div>
+    <div class="card">
+      <h2>Ensuring shareholder value</h2>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Secure product</b> — locally unavailable; local rate is ~160–200% higher.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Cost saving</b> — net profit at this rate = BDT 19,338,566 (Nov), full ~BDT 6.15M COGS saving on this LC.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Supply continuity</b> — timely booking + LC opening reduce supply/production disruption risk and maintain safety stock.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Demand-based procurement</b> — aligned to the 18-month sales &amp; production plan.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Flexible strategy</b> — 100% spot purchase (product not regularly available in market).</span></div>
+      <div class="kv" style="margin-top:14px;">
+        <span class="k">DSO / DPO / DIO</span><span class="v">70.80 / 66.00 / 121.27 days</span>
+        <span class="k">Contribution / bag</span><span class="v">BDT 7.43 · 25.96%</span>
+        <span class="k">Sales plan (Nov)</span><span class="v">7,400,000 bags</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk & 18-month plan -->
+  <div class="grid g2" style="margin-bottom:16px;">
+    <div class="card">
+      <h2>Risk &amp; return balance</h2>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--bad);"></span><span><b>Geopolitical</b> — Middle-East war escalation tightens material &amp; raises freight/energy cost.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--bad);"></span><span><b>Supply</b> — product unavailability risk; no other approved grades in market.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--warn);"></span><span><b>Price</b> — local rate is ~200% higher; missing this window forfeits the −13% advantage.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--warn);"></span><span><b>FX</b> — BDT/USD exposure on USD 316,800 (unhedged unless forward booked).</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Return</b> — product availability ensured; quality ensured; continuity protected.</span></div>
+    </div>
+    <div class="card">
+      <h2>18-month PP Lamination requirement (MT)</h2>
+      <div class="chart-box" style="height:230px;"><canvas id="plan"></canvas></div>
+      <div class="legend">Booking of <b>198 MT (198,000 KG)</b> ≈ 1.5 months of lamination draw (avg ~132 MT/mo). Strategy: <b>100% Spot</b>, refreshed monthly per plan.</div>
+    </div>
+  </div>
+
+  <!-- SOD -->
+  <div class="card" style="margin-bottom:16px;">
+    <h2>Statement of Duty (ownership)</h2>
+    <div class="grid g3">
+      <div><span class="chip chip-info">MD</span><span class="muted" style="font-size:12.5px;"> Final approval of this deck; then PO &amp; LC.</span></div>
+      <div><span class="chip chip-info">CEO</span><span class="muted" style="font-size:12.5px;"> Business alignment &amp; timely review.</span></div>
+      <div><span class="chip chip-info">CFO / Finance</span><span class="muted" style="font-size:12.5px;"> Viability, cash flow, CCC, margin.</span></div>
+      <div><span class="chip chip-info">Procurement</span><span class="muted" style="font-size:12.5px;"> PO after approval, within budget &amp; QC spec.</span></div>
+      <div><span class="chip chip-info">Treasury / Commercial</span><span class="muted" style="font-size:12.5px;"> UPAS LC with HSBC / MTB at best rate.</span></div>
+      <div><span class="chip chip-info">Sales / Inventory / Distribution</span><span class="muted" style="font-size:12.5px;"> COGS-aligned pricing, storage, OTIF.</span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>Decision-support only — not a self-approval.</b> Route to <b>MD for final approval</b> → then Procurement raises the PO → then Treasury opens the UPAS LC with HSBC / MTB.
+    · LC value BDT 39.28M falls in the 5M–50M DoA band (Procurement Head + CFO).
+    · Sources: source workbook "Final_PP Lamination LC Deck With 360 Risk Coverage" (8 tabs) + PMS MDM (APFIL, item 11112).
+    · FX 124.00 BDT/USD. · LC Decision Orchestrator v1 (equal 20% weights; approve ≥70, hold ≥50).
+  </div>
+</div>
+
+<script>
+(function(){
+  const domains = [
+    {name:'Inventory',   s:85, c:'#27c281'},
+    {name:'Procurement', s:90, c:'#27c281'},
+    {name:'Finance',     s:82, c:'#27c281'},
+    {name:'Treasury',    s:88, c:'#27c281'},
+    {name:'Risk',        s:85, c:'#27c281'},
+  ];
+
+  const target = 86;
+  const fill = document.querySelector('.gauge .fill');
+  const C = 402.1;
+  const off = C * (1 - target/100);
+  setTimeout(()=>{ fill.style.strokeDashoffset = off; }, 120);
+
+  if(window.Chart){
+    new Chart(document.getElementById('radar'), {
+      type:'radar',
+      data:{
+        labels: domains.map(d=>d.name),
+        datasets:[{
+          label:'Domain score',
+          data: domains.map(d=>d.s),
+          backgroundColor:'rgba(39,194,129,.20)',
+          borderColor:'#27c281',
+          borderWidth:2,
+          pointBackgroundColor: domains.map(d=>d.c),
+          pointRadius:4
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        scales:{ r:{ min:0, max:100, ticks:{stepSize:20, color:'#8b96b3', backdropColor:'transparent'}, grid:{color:'#2a3350'}, angleLines:{color:'#2a3350'}, pointLabels:{color:'#e8ecf6', font:{size:12}} }},
+        plugins:{ legend:{display:false} }
+      }
+    });
+
+    const months=['Oct-26','Nov-26','Dec-26','Jan-27','Feb-27','Mar-27','Apr-27','May-27','Jun-27','Jul-27','Aug-27','Sep-27','Oct-27','Nov-27','Dec-27','Jan-28','Feb-28','Mar-28'];
+    const mt=[131.93,128.88,129.50,126.94,119.02,119.31,120.83,121.73,127.35,132.06,131.65,132.06,131.93,128.88,129.50,126.94,119.02,126.94];
+    new Chart(document.getElementById('plan'), {
+      type:'bar',
+      data:{
+        labels: months,
+        datasets:[{
+          label:'PP Lamination (MT)',
+          data: mt,
+          backgroundColor: mt.map(m=> m>=132 ? 'rgba(62,201,255,.85)' : 'rgba(79,140,255,.65)'),
+          borderRadius:3
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        scales:{ x:{ticks:{color:'#8b96b3', maxRotation:60, font:{size:9}}, grid:{display:false}}, y:{ticks:{color:'#8b96b3'}, grid:{color:'#2a3350'}} },
+        plugins:{ legend:{display:false} }
+      }
+    });
+  } else {
+    document.querySelectorAll('.chart-box').forEach(e=>e.innerHTML='<div style="color:#f0516d;padding:20px;">Chart.js failed to load (offline). Domain scores shown in cards.</div>');
+  }
+})();
+</script>
+</body>
+</html>
