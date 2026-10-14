@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Petrochemical Price Surge — Management Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0f1420; --panel:#171d2e; --panel2:#1d2436; --line:#2a3350;
+    --txt:#e8ecf6; --muted:#8b96b3; --accent:#4f8cff; --good:#27c281; --warn:#f5a623; --bad:#f0516d;
+    --gold:#ffd166; --cyan:#3ec9ff; --purple:#b57bff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--txt); font-family:'Segoe UI',system-ui,-apple-system,sans-serif; padding:24px; line-height:1.45;}
+  .wrap{max-width:1240px; margin:0 auto;}
+  h1{font-size:22px; font-weight:700; letter-spacing:.2px;}
+  h2{font-size:13px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); margin-bottom:12px; font-weight:600;}
+  .sub{color:var(--muted); font-size:13px;}
+
+  .topbar{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:20px; flex-wrap:wrap;}
+  .badge{display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:4px 10px; border-radius:20px; border:1px solid var(--line); color:var(--muted);}
+  .badge .dot{width:8px; height:8px; border-radius:50%; background:var(--bad);}
+  .badge .dot.warn{background:var(--warn);}
+
+  .alert{display:flex; align-items:center; gap:16px; background:linear-gradient(135deg,#3a1620,#2a1016); border:1px solid #6b2a38; border-radius:14px; padding:16px 20px; margin-bottom:16px; flex-wrap:wrap;}
+  .alert .a-badge{display:inline-flex; align-items:center; gap:8px; background:rgba(240,81,109,.16); border:1px solid rgba(240,81,109,.45); color:var(--bad); font-weight:800; letter-spacing:.6px; font-size:13px; padding:6px 14px; border-radius:8px; white-space:nowrap;}
+  .alert .a-text{font-size:13.5px; flex:1; min-width:280px;}
+  .alert .a-text b{color:var(--bad);}
+  .alert .a-chips{display:flex; gap:6px; flex-wrap:wrap;}
+
+  .grid{display:grid; gap:16px;}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g5{grid-template-columns:repeat(5,1fr);}
+  @media(max-width:900px){ .g2,.g3,.g5{grid-template-columns:1fr;} }
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px;}
+  .card h3{font-size:13px; color:var(--muted); font-weight:600; margin-bottom:14px; text-transform:uppercase; letter-spacing:.8px;}
+
+  .kpi .lbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.7px;}
+  .kpi .num{font-size:26px; font-weight:800; margin:4px 0 2px; font-variant-numeric:tabular-nums;}
+  .kpi .d{font-size:12px;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.6px; padding:8px 10px; border-bottom:1px solid var(--line);}
+  td{padding:9px 10px; border-bottom:1px solid #202840; vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right; font-variant-numeric:tabular-nums; font-weight:600;}
+  .pos{color:var(--good);} .neg{color:var(--bad);} .warn-t{color:var(--warn);} .muted{color:var(--muted);}
+
+  .chip{display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; border:1px solid var(--line); margin:2px 2px 0 0;}
+  .chip-bad{background:rgba(240,81,109,.12); border-color:rgba(240,81,109,.35); color:var(--bad);}
+  .chip-warn{background:rgba(245,166,35,.12); border-color:rgba(245,166,35,.35); color:var(--warn);}
+  .chip-info{background:rgba(79,140,255,.12); border-color:rgba(79,140,255,.35); color:var(--accent);}
+
+  .chart-box{position:relative; height:300px;}
+  .legend{font-size:12px; color:var(--muted); margin-top:8px; line-height:1.55;}
+  .legend b{color:var(--txt);}
+
+  .timeline{list-style:none;}
+  .timeline li{display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #202840; font-size:13px;}
+  .timeline li:last-child{border-bottom:none;}
+  .t-dot{width:9px; height:9px; border-radius:50%; margin-top:5px; flex-shrink:0; background:var(--bad);}
+  .t-date{min-width:74px; color:var(--muted); font-size:12px; flex-shrink:0;}
+  .t-body b{color:var(--txt);} .t-body span{color:var(--muted);}
+
+  .risk-row{display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-bottom:1px solid #202840; font-size:13px;}
+  .risk-row:last-child{border-bottom:none;}
+  .risk-ico{width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0;}
+
+  .foot{color:var(--muted); font-size:11.5px; margin-top:22px; padding-top:14px; border-top:1px solid var(--line); line-height:1.6;}
+  a{color:var(--accent); text-decoration:none;} a:hover{text-decoration:underline;}
+  .ref-row{display:flex; gap:10px; padding:8px 0; border-bottom:1px solid #202840; font-size:12.5px; align-items:baseline;}
+  .ref-row:last-child{border-bottom:none;}
+  .ref-src{min-width:150px; color:var(--muted); flex-shrink:0; font-weight:600;}
+  .ref-grp{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin:10px 0 4px;}
+
+  @page{ size: A4; margin: 10mm; }
+  @media print{
+    *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+    body{ background:var(--bg) !important; }
+    .card{ break-inside:avoid; }
+    .grid{ break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div>
+      <h1>Petrochemical Market Alert — <span style="color:var(--bad)">Price Increase Report</span></h1>
+      <div class="sub">Crude Oil · Polypropylene (PP) · Vessel Bunker — impact of Middle-East escalation (Saudi attack + Iran conflict) &amp; Asian PP supply crunch</div>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+      <span class="badge">As of <b style="color:var(--txt);">14 Oct 2026</b></span>
+      <span class="badge"><span class="dot"></span> Market stress: HIGH</span>
+      <span class="badge">For: Management / SCM / Procurement</span>
+    </div>
+  </div>
+
+  <!-- Alert strip -->
+  <div class="alert">
+    <span class="a-badge">⚠ COST-PUSH ALERT · ACT NOW</span>
+    <div class="a-text">
+      Brent crude is <b>+71% YoY</b> (~$106/bbl, spiked to <b>$130</b> on the Saudi Aramco strike), Singapore VLSFO bunker is running near
+      <b>$907/MT</b> (MGO <b>$1,261/MT</b>), and China PP (SunSirs spot) is at <b>¥10,657/ton</b> and climbing (<b>+2.8% in the last week</b>) on an Asian supply crunch.
+      Feedstock (naphtha <b>+69% YoY</b>, propane <b>+22% MoM</b>) is driving a <b>broad petrochemical cost push</b> that will hit landed PP cost &amp; freight on upcoming LCs.
+    </div>
+    <div class="a-chips">
+      <span class="chip chip-bad">Brent $106 (+71% YoY)</span>
+      <span class="chip chip-bad">VLSFO $907/MT</span>
+      <span class="chip chip-warn">PP ¥10,657/t ▲</span>
+      <span class="chip chip-warn">Hormuz risk</span>
+    </div>
+  </div>
+
+  <!-- KPI cards -->
+  <div class="grid g5" style="margin-bottom:16px;">
+    <div class="card kpi">
+      <div class="lbl">Brent Crude</div>
+      <div class="num">$105.96</div>
+      <div class="d">USD/bbl · <span class="neg">−2.57% MoM</span> · <span class="neg">+71.15% YoY</span></div>
+      <div class="d muted">Spiked to $130.18 (Oct 8)</div>
+    </div>
+    <div class="card kpi">
+      <div class="lbl">WTI Crude</div>
+      <div class="num">$95.46</div>
+      <div class="d">USD/bbl · <span class="neg">−9.79% MoM</span> · <span class="neg">+63.83% YoY</span></div>
+      <div class="d muted">+1.41% today</div>
+    </div>
+    <div class="card kpi">
+      <div class="lbl">PP (China spot · SunSirs)</div>
+      <div class="num">¥10,657</div>
+      <div class="d">CNY/ton · <span class="neg">+2.76% in 5 sessions</span></div>
+      <div class="d muted">≈ USD 1,590/MT (6.70 FX)</div>
+    </div>
+    <div class="card kpi">
+      <div class="lbl">Bunker VLSFO (SG)</div>
+      <div class="num">$907</div>
+      <div class="d">USD/MT · <span class="warn-t">elevated</span></div>
+      <div class="d muted">MGO $1,261/MT</div>
+    </div>
+    <div class="card kpi">
+      <div class="lbl">Naphtha (feedstock)</div>
+      <div class="num">$883.61</div>
+      <div class="d">USD/ton · <span class="neg">+3.95% MoM</span> · <span class="neg">+69.50% YoY</span></div>
+      <div class="d muted">Propane +22.16% MoM</div>
+    </div>
+  </div>
+
+  <!-- Comparative summary table -->
+  <div class="card" style="margin-bottom:16px;">
+    <h2>Comparative summary — current vs 1-month vs 1-year</h2>
+    <table>
+      <tr><th>Indicator</th><th class="num">Current (14 Oct)</th><th class="num">1M ago (Δ)</th><th class="num">1Y ago (Δ)</th><th>Direction / Signal</th></tr>
+      <tr><td>Brent Crude (USD/bbl)</td><td class="num">105.96</td><td class="num neg">−2.57%</td><td class="num neg">+71.15%</td><td><span class="chip chip-bad">war premium, still elevated</span></td></tr>
+      <tr><td>WTI Crude (USD/bbl)</td><td class="num">95.46</td><td class="num neg">−9.79%</td><td class="num neg">+63.83%</td><td><span class="chip chip-bad">fifth straight gain this wk</span></td></tr>
+      <tr><td>PP China spot (SunSirs, CNY/ton)</td><td class="num">10,656.67</td><td class="num neg">+2.76% (5 sessions)</td><td class="num pos">−12.0%</td><td><span class="chip chip-warn">inflecting up (supply crunch)</span></td></tr>
+      <tr><td>Naphtha (USD/ton)</td><td class="num">883.61</td><td class="num neg">+3.95%</td><td class="num neg">+69.50%</td><td><span class="chip chip-bad">PP feedstock cost push</span></td></tr>
+      <tr><td>Propane (feedstock, USD/gal)</td><td class="num">1.04</td><td class="num neg">+22.16%</td><td class="num neg">+60.99%</td><td><span class="chip chip-bad">PDH PP cost surging</span></td></tr>
+      <tr><td>Bunker VLSFO Singapore (USD/MT)</td><td class="num">907</td><td class="num warn-t">rising</td><td class="num warn-t">elevated</td><td><span class="chip chip-bad">freight + war-risk insurance</span></td></tr>
+      <tr><td>Bunker MGO Singapore (USD/MT)</td><td class="num">1,261</td><td class="num warn-t">rising</td><td class="num warn-t">elevated</td><td><span class="chip chip-bad">distillate tight</span></td></tr>
+    </table>
+    <div class="muted" style="font-size:11.5px; margin-top:10px;">
+      Note: Brent/WTI pulled back from the early-Oct spike (~$130) as Saudi raised output (+~⅓ in Sep) and the US helped move &gt;19M bbl through Hormuz — but the structural YoY premium persists. PP is the notable inflection: still −12% YoY (weak 2026 margins) but now rising fast on the Asian supply crunch.
+    </div>
+  </div>
+
+  <!-- Chart 1: Crude -->
+  <div class="grid g2" style="margin-bottom:16px;">
+    <div class="card">
+      <h2>Brent Crude — Oct 2026 crisis window (USD/bbl)</h2>
+      <div class="chart-box"><canvas id="brentChart"></canvas></div>
+      <div class="legend">
+        Spike to <b>$130.18</b> (Oct 8) on the <b>Saudi Aramco strike</b>, then partial pullback to <b>$105.96</b> as flows resumed.
+        Still <b>+71% vs a year ago</b> (≈$61.9). Trading Economics Q4 forecast <b>$108.60</b>, 12-mo <b>$123.97</b>.
+      </div>
+    </div>
+    <div class="card">
+      <h2>PP China spot — 6-day price trend (CNY/ton · SunSirs)</h2>
+      <div class="chart-box"><canvas id="ppChart"></canvas></div>
+      <div class="legend">
+        SunSirs China PP spot rose <b>¥10,370 → ¥10,657</b> (+2.76%) over the last five sessions — a clear short-term uptrend on the
+        Asian supply crunch. Still <b>−12% YoY</b> (weak 2026 margins), so the rise has room to continue. Current <b>¥10,656.67/ton ≈ USD 1,590/MT</b>.
+        <br><span class="chip chip-info">Internal: APFIL lamination grade last PO USD 1.60/kg</span>
+        <span class="chip chip-warn">next quotes expected higher</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart 3: Bunker + feedstocks -->
+  <div class="grid g2" style="margin-bottom:16px;">
+    <div class="card">
+      <h2>Singapore vessel bunker — current levels (USD/MT)</h2>
+      <div class="chart-box" style="height:260px;"><canvas id="bunkerChart"></canvas></div>
+      <div class="legend">
+        VLSFO <b>$907/MT</b>, MGO <b>$1,261/MT</b> — sharply elevated on <b>war-risk premium</b> + crude cost. Bunker tightness raises freight and
+        war-risk insurance on every import container/breakbulk leg into Chittagong.
+      </div>
+    </div>
+    <div class="card">
+      <h2>PP feedstock cost push (USD/ton, MoM %)</h2>
+      <div class="chart-box" style="height:260px;"><canvas id="feedChart"></canvas></div>
+      <div class="legend">
+        Naphtha <b>+3.95% MoM</b> (+69% YoY) and propane <b>+22.16% MoM</b> (+61% YoY) are lifting propylene monomer and, in turn,
+        PP conversion cost — supporting a further PP price rise ahead of the Asian supply crunch.
+      </div>
+    </div>
+  </div>
+
+  <!-- Geopolitical timeline -->
+  <div class="card" style="margin-bottom:16px;">
+    <h2>Geopolitical escalation — what happened (14 Oct 2026)</h2>
+    <ul class="timeline">
+      <li><span class="t-dot"></span><span class="t-date">Oct 13</span><span class="t-body"><b>Houthi missile struck Saudi Aramco HQ (Dhahran)</b> <span>— fire in part of the complex; the group also hit Riyadh's main airport.</span></span></li>
+      <li><span class="t-dot"></span><span class="t-date">Oct 12</span><span class="t-body"><b>Saudi-led coalition intercepted a ballistic missile toward Riyadh</b> <span>— Tehran escalating attacks on tankers in the Strait of Hormuz.</span></span></li>
+      <li><span class="t-dot"></span><span class="t-date">Oct 8</span><span class="t-body"><b>Brent spiked to ~$130.18</b> <span>— peak of the supply-risk repricing on the Saudi attack.</span></span></li>
+      <li><span class="t-dot"></span><span class="t-date">Ongoing</span><span class="t-body"><b>Strait of Hormuz risk persists</b> <span>— Iranian attacks on tankers add supply-stability risk; US helping move &gt;19M bbl through the strait.</span></span></li>
+      <li><span class="t-dot" style="background:var(--good);"></span><span class="t-date">Offset</span><span class="t-body"><b>Saudi Sept output +~⅓</b> (8.37M bbl/d) and <b>US–Russia diesel agreement</b> <span>— partial supply relief capping further oil upside.</span></span></li>
+    </ul>
+  </div>
+
+  <!-- Impact & recommendations -->
+  <div class="grid g2" style="margin-bottom:16px;">
+    <div class="card">
+      <h2>What this means for our cost base</h2>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--bad);"></span><span><b>PP landed cost rising</b> — SunSirs China PP +2.76% in 5 sessions (¥10,657/t) and feedstock (naphtha +69% YoY, propane +61% YoY) point to higher supplier quotes for the next LC cycle.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--bad);"></span><span><b>Freight up</b> — VLSFO $907/MT + war-risk insurance premium inflate ocean freight on PP/chemical imports.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--warn);"></span><span><b>FX &amp; credit</b> — BDT/USD exposure compounds the USD-denominated cost rise; hedging/fwd at LC opening is critical.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--warn);"></span><span><b>Supply availability</b> — Asian PP supply crunch + low run rates raise lead-time / availability risk on spot PP grades.</span></div>
+    </div>
+    <div class="card">
+      <h2>Recommended actions</h2>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>1 · Lock current quotes now</b> — if a supplier still honors recent (lower) PP pricing, freeze the PI before the rising spot trend reprices the next offer.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>2 · Re-run landed cost</b> — refresh CFR + freight (higher bunker) + duty for the next PP LC before committing budget.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>3 · Hedge FX early</b> — book forward at LC opening to isolate the BDT/USD leg of the cost push.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>4 · Consider building PP safety stock</b> — front-load within DIO limits while Asian supply is tight and prices are still below YoY levels.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--warn);"></span><span><b>5 · Monitor Hormuz daily</b> — any closure will spike freight &amp; insurance sharply; set a re-trigger threshold for escalation.</span></div>
+    </div>
+  </div>
+
+  <!-- Sources & references -->
+  <div class="card" style="margin-bottom:16px;">
+    <h2>Sources &amp; references (clickable)</h2>
+    <div class="grid g2" style="gap:6px 28px;">
+      <div>
+        <div class="ref-grp">PP — China spot</div>
+        <div class="ref-row"><span class="ref-src">SunSirs (PP)</span><a href="https://www.sunsirs.com/uk/prodetail-718.html" target="_blank">sunsirs.com/uk/prodetail-718.html</a></div>
+        <div class="ref-row"><span class="ref-src">Trading Economics</span><a href="https://tradingeconomics.com/commodity/polypropylene" target="_blank">tradingeconomics.com/commodity/polypropylene</a></div>
+        <div class="ref-row"><span class="ref-src">CCFGroup</span><a href="https://www.ccfgroup.com/informs/pp.html" target="_blank">ccfgroup.com/informs/pp.html</a></div>
+        <div class="ref-row"><span class="ref-src">Tindex</span><a href="https://tindex.app/en/indicators/commodities/polypropylene/" target="_blank">tindex.app · polypropylene</a></div>
+        <div class="ref-row"><span class="ref-src">Intratec</span><a href="https://www.intratec.us/solutions/primary-commodity-prices/commodity/polypropylene-prices" target="_blank">intratec.us · polypropylene-prices</a></div>
+        <div class="ref-row"><span class="ref-src">ICIS</span><a href="https://www.icis.com/compliance/reports/polypropylene-price-report/" target="_blank">icis.com · PP price report</a></div>
+        <div class="ref-row"><span class="ref-src">Expert Market Research</span><a href="https://www.expertmarketresearch.com/price-forecast/polypropylene-price-trends" target="_blank">expertmarketresearch.com · PP trend</a></div>
+      </div>
+      <div>
+        <div class="ref-grp">Crude oil</div>
+        <div class="ref-row"><span class="ref-src">Trading Economics</span><a href="https://tradingeconomics.com/commodity/brent-crude-oil" target="_blank">tradingeconomics.com/commodity/brent-crude-oil</a></div>
+        <div class="ref-row"><span class="ref-src">Trading Economics</span><a href="https://tradingeconomics.com/commodity/crude-oil" target="_blank">tradingeconomics.com/commodity/crude-oil (WTI)</a></div>
+        <div class="ref-grp">Vessel bunker</div>
+        <div class="ref-row"><span class="ref-src">BunkerFuelPrices</span><a href="https://bunkerfuelprices.com/bunker-prices/singapore" target="_blank">bunkerfuelprices.com · Singapore</a></div>
+        <div class="ref-row"><span class="ref-src">OilPriceAPI</span><a href="https://www.oilpriceapi.com/marine-fuel/singapore" target="_blank">oilpriceapi.com · Singapore marine fuel</a></div>
+        <div class="ref-grp">News / geopolitical</div>
+        <div class="ref-row"><span class="ref-src">Trading Economics</span><a href="https://tradingeconomics.com/commodity/crude-oil" target="_blank">crude-oil news stream (Saudi strike, Hormuz)</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>Prepared for management decision-support — market intelligence only, not a recommendation to trade.</b><br>
+    Sources (as of 14 Oct 2026): Trading Economics (Brent/WTI/naphtha/propane/methanol commodity pages); BunkerFuelPrices.com &amp; OilPriceAPI (Singapore VLSFO $907 / MGO $1,261); <b>SunSirs prodetail-718</b> (China PP spot ¥10,656.67/ton, 6-day daily series); Intratec &amp; Expert Market Research (PP −12% YoY; APAC PP $1.12–1.24/kg); Trading Economics news stream (Saudi Aramco strike, Riyadh airport, Hormuz, Saudi output). FX 6.70 CNY/USD for PP conversion. Figures are market references / CFD-based and may vary by grade, delivery term and quantity.
+  </div>
+</div>
+
+<script>
+(function(){
+  if(!window.Chart){
+    document.querySelectorAll('.chart-box').forEach(e=>e.innerHTML='<div style="color:#f0516d;padding:20px;">Chart.js failed to load (offline).</div>');
+    return;
+  }
+  Chart.defaults.color = '#8b96b3';
+  Chart.defaults.borderColor = '#2a3350';
+  const grid = { color:'#2a3350' };
+
+  // Brent crisis window (known daily points Oct 6→14)
+  new Chart(document.getElementById('brentChart'), {
+    type:'line',
+    data:{
+      labels:['Oct 6','Oct 8','Oct 12','Oct 14'],
+      datasets:[
+        { label:'Brent (USD/bbl)', data:[125.44,130.18,106.85,105.96], borderColor:'#f0516d', backgroundColor:'rgba(240,81,109,.15)', fill:true, tension:.25, pointRadius:5, pointBackgroundColor:'#f0516d', borderWidth:2.5 },
+        { label:'1-yr ago ≈ $61.9', data:[61.9,61.9,61.9,61.9], borderColor:'#ffd166', borderDash:[6,4], pointRadius:0, borderWidth:1.5 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{ y:{ grid, ticks:{ color:'#8b96b3' }, title:{display:true, text:'USD/bbl', color:'#8b96b3'} }, x:{ grid:{display:false} } },
+      plugins:{ legend:{ labels:{ color:'#e8ecf6', boxWidth:12, font:{size:11} } } }
+    }
+  });
+
+  // PP 6-day trend (SunSirs daily spot, prodetail-718)
+  new Chart(document.getElementById('ppChart'), {
+    type:'line',
+    data:{
+      labels:['Oct 9','Oct 10','Oct 11','Oct 12','Oct 13','Oct 14'],
+      datasets:[
+        { label:'PP China spot (CNY/ton)', data:[10370,10583.33,10583.33,10566.67,10583.33,10656.67], borderColor:'#f0516d', backgroundColor:'rgba(240,81,109,.15)', fill:true, tension:.25, pointRadius:5, pointBackgroundColor:'#f0516d', borderWidth:2.5 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{ y:{ grid, beginAtZero:false, ticks:{ color:'#8b96b3' }, title:{display:true, text:'CNY/ton', color:'#8b96b3'} }, x:{ grid:{display:false} } },
+      plugins:{ legend:{ display:false } }
+    }
+  });
+
+  // Bunker levels
+  new Chart(document.getElementById('bunkerChart'), {
+    type:'bar',
+    data:{
+      labels:['VLSFO','MGO (LSMGO)'],
+      datasets:[
+        { label:'USD/MT (Singapore)', data:[907,1261], backgroundColor:['#f5a623','#f0516d'], borderRadius:5 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      indexAxis:'y',
+      scales:{ x:{ grid, beginAtZero:true, ticks:{ color:'#8b96b3' }, title:{display:true, text:'USD/MT', color:'#8b96b3'} }, y:{ grid:{display:false} } },
+      plugins:{ legend:{ display:false } }
+    }
+  });
+
+  // Feedstock MoM %
+  new Chart(document.getElementById('feedChart'), {
+    type:'bar',
+    data:{
+      labels:['Naphtha (+3.95%)','Propane (+22.16%)','Methanol (+5.95%)'],
+      datasets:[
+        { label:'MoM % change', data:[3.95,22.16,5.95], backgroundColor:['#f5a623','#f0516d','#f5a623'], borderRadius:5 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{ y:{ grid, beginAtZero:true, ticks:{ color:'#8b96b3', callback: v => v+'%' }, title:{display:true, text:'MoM %', color:'#8b96b3'} }, x:{ grid:{display:false} } },
+      plugins:{ legend:{ display:false } }
+    }
+  });
+})();
+</script>
+</body>
+</html>
