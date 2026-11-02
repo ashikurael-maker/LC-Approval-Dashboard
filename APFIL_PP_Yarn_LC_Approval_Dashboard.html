@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APFIL · PP Yarn (Sinopec T03) LC Approval Dashboard</title>
+<title>APFIL · PP Yarn (Sabic Grade 5001P) LC Approval Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root{
@@ -24,10 +24,10 @@
   .tag-arms{color:var(--accent); font-weight:600;}
 
   /* Purchase strategy strip */
-  .strategy{display:flex; align-items:center; gap:16px; background:linear-gradient(135deg,#231a29,#1a1120); border:1px solid #6b3a55; border-radius:14px; padding:16px 20px; margin-bottom:16px; flex-wrap:wrap;}
-  .strategy .s-badge{display:inline-flex; align-items:center; gap:8px; background:rgba(245,166,35,.16); border:1px solid rgba(245,166,35,.45); color:var(--warn); font-weight:800; letter-spacing:.6px; font-size:13px; padding:6px 14px; border-radius:8px; white-space:nowrap;}
+  .strategy{display:flex; align-items:center; gap:16px; background:linear-gradient(135deg,#0f2436,#0b1b2c); border:1px solid #2c5a7a; border-radius:14px; padding:16px 20px; margin-bottom:16px; flex-wrap:wrap;}
+  .strategy .s-badge{display:inline-flex; align-items:center; gap:8px; background:rgba(62,201,255,.16); border:1px solid rgba(62,201,255,.45); color:var(--upas); font-weight:800; letter-spacing:.6px; font-size:13px; padding:6px 14px; border-radius:8px; white-space:nowrap;}
   .strategy .s-text{font-size:13.5px; color:var(--txt); flex:1; min-width:280px;}
-  .strategy .s-text b{color:var(--warn);}
+  .strategy .s-text b{color:var(--upas);}
   .strategy .s-chips{display:flex; gap:6px; flex-wrap:wrap;}
 
   .grid{display:grid; gap:16px;}
@@ -40,13 +40,12 @@
   .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px;}
   .card h3{font-size:13px; color:var(--muted); font-weight:600; margin-bottom:14px; text-transform:uppercase; letter-spacing:.8px;}
 
-  /* Hero KPI cards (very beginning) */
   .kpi-hero{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:16px;}
   @media(max-width:900px){ .kpi-hero{grid-template-columns:1fr 1fr;} }
   .kpi{background:linear-gradient(135deg,#182036,#131a2b); border:1px solid #2c3a63; border-radius:14px; padding:18px 20px;}
   .kpi .lbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.9px; margin-bottom:8px; display:flex; align-items:center; gap:7px;}
   .kpi .lbl .ico{font-size:14px;}
-  .kpi .big{font-size:27px; font-weight:800; letter-spacing:.3px;}
+  .kpi .big{font-size:26px; font-weight:800; letter-spacing:.3px;}
   .kpi .unit{font-size:13px; color:var(--muted); font-weight:500; margin-left:4px;}
   .kpi .sub2{font-size:11.5px; color:var(--muted); margin-top:6px;}
   .kpi .sub2 b{color:var(--txt);}
@@ -65,7 +64,6 @@
   .gauge .val span{font-size:11px; color:var(--muted);}
   .hero-main h1{margin-bottom:4px;}
   .verdict-pill{display:inline-block; font-size:13px; font-weight:800; letter-spacing:1px; padding:5px 14px; border-radius:8px; margin:8px 0 10px;}
-  .vp-conditional{background:rgba(245,166,35,.15); color:var(--warn); border:1px solid rgba(245,166,35,.4);}
   .vp-approve{background:rgba(39,194,129,.15); color:var(--good); border:1px solid rgba(39,194,129,.4);}
   .hero-stats{display:flex; flex-direction:column; gap:12px;}
   .hs{min-width:220px;}
@@ -95,10 +93,6 @@
   .chip-ok{background:rgba(39,194,129,.12); border-color:rgba(39,194,129,.35); color:var(--good);}
   .chip-info{background:rgba(79,140,255,.12); border-color:rgba(79,140,255,.35); color:var(--accent);}
   .chip-sel{background:rgba(62,201,255,.14); border-color:rgba(62,201,255,.4); color:var(--upas); font-weight:700;}
-
-  .kv{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; font-size:13px;}
-  .kv .k{color:var(--muted);}
-  .kv .v{font-weight:600; text-align:right;}
 
   .cond-item{display:flex; gap:10px; padding:10px 0; border-bottom:1px solid #202840;}
   .cond-item:last-child{border-bottom:none;}
@@ -145,51 +139,50 @@
       <div class="sub">Akij Poly Fibre Industries Ltd. — LC Decision Orchestrator · 5-domain scoring · 360° risk coverage</div>
     </div>
     <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
-      <span class="badge"><span class="dot"></span> UPAS</span>
-      <span class="badge">Origin: China · Sinopec T03</span>
+      <span class="badge"><span class="dot"></span> Deferred Payment</span>
+      <span class="badge">Sabic Grade 5001P</span>
       <span class="badge" style="color:var(--good);">✓ PI locked</span>
       <span class="badge" style="color:var(--good);">✓ Margin secured</span>
       <span class="badge" style="color:var(--good);">✓ FX in costing</span>
     </div>
   </div>
 
-  <!-- ============ 1. HERO KPI CARDS (very beginning, in Cr) ============ -->
+  <!-- ============ 1. HERO KPI CARDS (very beginning) ============ -->
   <div class="kpi-hero">
     <div class="kpi hl-accent">
       <div class="lbl"><span class="ico">🧾</span> LC Value Total</div>
-      <div class="big">8.39 Cr<span class="unit">BDT</span></div>
-      <div class="sub2"><b>USD 671,400</b> · 450,000 KG × USD 1.492 (CFR)</div>
+      <div class="big">USD 518,000</div>
+      <div class="sub2"><b>350,000 KG</b> × USD 1.48 (CFR) · 6.48 Cr BDT</div>
     </div>
     <div class="kpi hl-good">
       <div class="lbl"><span class="ico">💰</span> Gross Profit</div>
-      <div class="big">3.06 Cr<span class="unit">BDT</span></div>
-      <div class="sub2">30,557,379 · <b class="pos">+0.06 Cr</b> vs budget</div>
+      <div class="big">BDT 30.90M</div>
+      <div class="sub2">30,901,790 · <b class="pos">3.09 Cr</b> · +0.09 Cr vs budget</div>
     </div>
     <div class="kpi hl-good">
       <div class="lbl"><span class="ico">📈</span> Net Profit</div>
-      <div class="big">1.95 Cr<span class="unit">BDT</span></div>
-      <div class="sub2">19,462,004 · <b class="pos">+0.03 Cr</b> vs budget</div>
+      <div class="big">BDT 19.71M</div>
+      <div class="sub2">19,711,393 · <b class="pos">1.97 Cr</b> · +0.06 Cr vs budget</div>
     </div>
     <div class="kpi hl-upas">
       <div class="lbl"><span class="ico">🏦</span> LC Terms</div>
-      <div class="big" style="color:var(--upas);">UPAS</div>
-      <div class="sub2">Usance Payable at Sight · cash-friendly at ~124d CCC</div>
+      <div class="big" style="color:var(--upas);">Deferred</div>
+      <div class="sub2">Deferred Payment (Usance LC) · cash-friendly at ~125d CCC</div>
     </div>
   </div>
 
-  <!-- Purchase strategy (very beginning) -->
+  <!-- Purchase strategy -->
   <div class="strategy">
-    <span class="s-badge">PURCHASE STRATEGY · 100% SPOT</span>
+    <span class="s-badge">PURCHASE STRATEGY · TERM CONTRACT</span>
     <div class="s-text">
-      <b>100% Spot Purchase (supply-disruption response).</b> Middle-East (SABIC) supply postponed — price is
-      rising daily and material is unavailable if not booked now. 18-month plan runs a <b>Term-Contract / Spot</b> mix;
-      <b>this LC is Spot</b> to secure the 450 MT (Sinopec T03, China) immediately.
+      <b>Term Contract booking</b> — negotiated at <b>USD 1.48</b>, <b style="color:var(--good);">−USD 70/MT vs current market</b> and
+      <b style="color:var(--good);">−0.8% vs last PO</b> (1.492). Long shipment lead time (50d) + Middle-East material unavailability make early locking essential.
     </div>
     <div class="s-chips">
-      <span class="chip chip-cond">Supply security</span>
-      <span class="chip chip-cond">Price rising daily</span>
+      <span class="chip chip-ok">Below market</span>
+      <span class="chip chip-ok">Below last PO</span>
+      <span class="chip chip-cond">Long lead 50d</span>
       <span class="chip chip-info">18-mo aligned</span>
-      <span class="chip chip-ok">China origin</span>
     </div>
   </div>
 
@@ -204,67 +197,67 @@
           </linearGradient>
         </defs>
         <circle class="track" cx="75" cy="75" r="64"/>
-        <circle class="fill" cx="75" cy="75" r="64" stroke-dasharray="402.1" stroke-dashoffset="100.5"/>
+        <circle class="fill" cx="75" cy="75" r="64" stroke-dasharray="402.1" stroke-dashoffset="88.5"/>
       </svg>
-      <div class="val"><b>75</b><span>/ 100</span></div>
+      <div class="val"><b>78</b><span>/ 100</span></div>
     </div>
     <div class="hero-main">
-      <div class="sub" style="margin-bottom:2px;">Material · PP Yarn (Sinopec T03) · China origin · item 11111 · Plant: Akij Polyfibre</div>
-      <h1>450,000 KG PP Yarn — <span class="tag-arms">USD 1.492/KG</span> (CFR)</h1>
+      <div class="sub" style="margin-bottom:2px;">Material · PP Yarn (Sabic Grade 5001P) · item 11111 · Plant: Akij Polyfibre</div>
+      <h1>350,000 KG PP Yarn — <span class="tag-arms">USD 1.48/KG</span> (CFR)</h1>
       <span class="verdict-pill vp-approve">APPROVE</span>
       <div style="font-size:13px; color:var(--muted); max-width:560px;">
-        Weighted score <b style="color:var(--txt)">75.0/100</b> with <b style="color:var(--good)">0 blockers</b> and
+        Weighted score <b style="color:var(--txt)">78.0/100</b> with <b style="color:var(--good)">0 blockers</b> and
         <b style="color:var(--good)">0 open conditions</b> — <b style="color:var(--good)">PI locked, LC margin secured, FX counted in costing</b>.
-        Rate <b style="color:var(--warn)">+18.4% vs last PO</b> (USD 1.492 vs 1.26, SABIC) but <b style="color:var(--good)">best of 6 CS quotes</b>
-        (market USD 1.50–1.56). Term <b style="color:var(--upas)">UPAS</b>. Route: <b style="color:var(--txt)">MD sign-off → PO → LC</b>.
+        Rate <b style="color:var(--good)">−0.8% vs last PO</b> (1.48 vs 1.492, KOCO) and <b style="color:var(--good)">−USD 70/MT vs market</b>.
+        Term <b style="color:var(--upas)">Deferred Payment</b>. Route: <b style="color:var(--txt)">MD sign-off → PO → LC</b>.
       </div>
     </div>
     <div class="hero-stats hs">
-      <div><div class="lbl">LC Opening Amount</div><div class="num">USD 671,400</div><div class="muted" style="font-size:11px;">8.39 Cr BDT</div></div>
-      <div><div class="lbl">Contract Value (PI)</div><div class="num">USD 671,400</div><div class="muted" style="font-size:11px;">450,000 KG × USD 1.492 · locked</div></div>
-      <div><div class="lbl">Approval Flow</div><div class="num" style="font-size:14px;">MD → PO → LC (UPAS)</div></div>
+      <div><div class="lbl">LC Opening Amount</div><div class="num">USD 518,000</div><div class="muted" style="font-size:11px;">6.48 Cr BDT</div></div>
+      <div><div class="lbl">Contract Value (PI)</div><div class="num">USD 518,000</div><div class="muted" style="font-size:11px;">350,000 KG × USD 1.48 · locked</div></div>
+      <div><div class="lbl">Approval Flow</div><div class="num" style="font-size:14px;">MD → PO → LC (Deferred)</div></div>
     </div>
   </div>
 
   <!-- Recommendation strip -->
   <div class="grid g5" style="margin-bottom:16px;">
-    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Recommended Value</div><div style="font-size:19px;font-weight:700;">USD 671,400</div><div class="muted" style="font-size:11px;">= 8.39 Cr · 450,000 KG × 1.492</div></div>
-    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Term</div><div style="font-size:19px;font-weight:700;color:var(--upas);">UPAS</div><div class="muted" style="font-size:11px;">cash-friendly at ~124d CCC</div></div>
+    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Recommended Value</div><div style="font-size:19px;font-weight:700;">USD 518,000</div><div class="muted" style="font-size:11px;">= 6.48 Cr · 350,000 KG × 1.48</div></div>
+    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Term</div><div style="font-size:19px;font-weight:700;color:var(--upas);">Deferred</div><div class="muted" style="font-size:11px;">usance · ~125d CCC</div></div>
     <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Bank / Margin</div><div style="font-size:19px;font-weight:700;color:var(--good);">Secured</div><div class="muted" style="font-size:11px;">margin locked in bank</div></div>
-    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Net Landed Cost</div><div style="font-size:19px;font-weight:700;color:var(--warn);">BDT 200.14/KG</div><div class="muted" style="font-size:11px;">vs budget 184.00 · +16.14</div></div>
-    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Best of CS (vs market)</div><div style="font-size:19px;font-weight:700;color:var(--good);">USD 1,492</div><div class="muted" style="font-size:11px;">market 1,500–1,560</div></div>
+    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Net Landed Cost</div><div style="font-size:19px;font-weight:700;color:var(--warn);">BDT 198.65/KG</div><div class="muted" style="font-size:11px;">vs budget 184.00 · +14.65</div></div>
+    <div class="card" style="padding:14px;"><div class="muted" style="font-size:11px;text-transform:uppercase;">Price vs Market</div><div style="font-size:19px;font-weight:700;color:var(--good);">−USD 70/MT</div><div class="muted" style="font-size:11px;">1.48 vs market ~1.55</div></div>
   </div>
 
   <!-- ============ 2. 5-DOMAIN SCORING ============ -->
   <div class="card" style="margin-bottom:16px;">
-    <h2>Five-Domain Scoring — 75.0 weighted (equal 20% weights)</h2>
+    <h2>Five-Domain Scoring — 78.0 weighted (equal 20% weights)</h2>
     <div class="grid g2">
       <div class="chart-box"><canvas id="radar"></canvas></div>
       <div class="grid g2" style="align-content:start; gap:10px;">
         <div class="domain">
-          <div class="dhead"><span class="dname">📦 Inventory</span><span class="dscore" style="color:var(--good);">80</span></div>
-          <div class="bar"><i style="width:80%;background:var(--good);"></i></div>
-          <div class="note"><b>Need confirmed.</b> 46d stock at hand + 20d in-transit = <b>66d cover</b> vs 45d safety + 35d lead (~80d). Arrival Nov–Dec-26 bridges the Dec-26 consumption window.</div>
+          <div class="dhead"><span class="dname">📦 Inventory</span><span class="dscore" style="color:var(--warn);">76</span></div>
+          <div class="bar"><i style="width:76%;background:var(--warn);"></i></div>
+          <div class="note"><b>Need confirmed, cover tight.</b> 47d hand + 26d transit = <b>73d cover</b> vs 45d safety + 50d lead (~95d). Arrival Dec-26–Jan-27 bridges Jan-27 consumption.</div>
         </div>
         <div class="domain">
-          <div class="dhead"><span class="dname">🛒 Procurement</span><span class="dscore" style="color:var(--warn);">68</span></div>
-          <div class="bar"><i style="width:68%;background:var(--warn);"></i></div>
-          <div class="note"><b>PI locked at USD 1,492</b> (Echo · Sinopec) — best of 6 CS quotes (market 1,500–1,560) but <b>+18.4% vs last PO</b> (1.26). Price justified by Middle-East supply disruption.</div>
+          <div class="dhead"><span class="dname">🛒 Procurement</span><span class="dscore" style="color:var(--good);">86</span></div>
+          <div class="bar"><i style="width:86%;background:var(--good);"></i></div>
+          <div class="note"><b>Price beating.</b> USD 1.48 = <b>−0.8% vs last PO</b> (1.492, KOCO) and <b>−USD 70/MT vs market</b>. PI locked; term-contract negotiated.</div>
         </div>
         <div class="domain">
-          <div class="dhead"><span class="dname">💰 Finance</span><span class="dscore" style="color:var(--good);">76</span></div>
-          <div class="bar"><i style="width:76%;background:var(--good);"></i></div>
-          <div class="note"><b>LC margin secured in bank.</b> NPAT +0.03 Cr, Gross margin +0.06 Cr, CCC improves −1.88d. Sales price pass-through covers the cost headwind.</div>
+          <div class="dhead"><span class="dname">💰 Finance</span><span class="dscore" style="color:var(--good);">78</span></div>
+          <div class="bar"><i style="width:78%;background:var(--good);"></i></div>
+          <div class="note"><b>Margin secured.</b> NPAT +0.06 Cr, Gross margin +0.09 Cr, CCC improves −1.07d. Sales price pass-through covers the cost headwind.</div>
         </div>
         <div class="domain">
           <div class="dhead"><span class="dname">🏦 Treasury</span><span class="dscore" style="color:var(--good);">80</span></div>
           <div class="bar"><i style="width:80%;background:var(--good);"></i></div>
-          <div class="note"><b>UPAS confirmed · FX already counted in costing</b> (no separate hedge gap). Cash-friendly at ~124d CCC.</div>
+          <div class="note"><b>Deferred payment · FX counted in costing</b> (no hedge gap). Cash-friendly at ~125d CCC.</div>
         </div>
         <div class="domain" style="grid-column:1/-1;">
-          <div class="dhead"><span class="dname">🛡️ Risk</span><span class="dscore" style="color:var(--warn);">70</span></div>
-          <div class="bar"><i style="width:70%;background:var(--warn);"></i></div>
-          <div class="note">Middle-East supply postponed (SABIC) → availability risk &amp; daily price moves. Sinopec (China) = tier-1, lower corridor. Booking now locks supply &amp; a price below today's market.</div>
+          <div class="dhead"><span class="dname">🛡️ Risk</span><span class="dscore" style="color:var(--warn);">68</span></div>
+          <div class="bar"><i style="width:68%;background:var(--warn);"></i></div>
+          <div class="note"><b>Long shipment lead time (50d)</b> + Middle-East material unavailability + daily price moves. Mitigated by locking 1.48 now (below market &amp; last PO).</div>
         </div>
       </div>
     </div>
@@ -274,60 +267,33 @@
   <div class="grid g2" style="margin-bottom:16px;">
     <div class="card">
       <h2>Pre-opening checklist — all complete ✓</h2>
-      <div class="cond-item"><div class="cond-idx">✓</div><div class="cond-body"><b>PI locked at USD 1,492/MT (Echo · Sinopec)</b><p>Owner: Procurement · DONE — rate frozen; no supplier-revision risk.</p></div></div>
-      <div class="cond-item"><div class="cond-idx">✓</div><div class="cond-body"><b>LC margin / provision secured in bank</b><p>Owner: Finance + Treasury · DONE — BDT cash to fund quantified; UPAS rate locked.</p></div></div>
-      <div class="cond-item"><div class="cond-idx">✓</div><div class="cond-body"><b>FX rate counted in costing</b><p>Owner: Treasury · DONE — USD 671,400 conversion embedded in the landed-cost build.</p></div></div>
+      <div class="cond-item"><div class="cond-idx">✓</div><div class="cond-body"><b>PI locked at USD 1.48/MT (Sabic Grade 5001P)</b><p>Owner: Procurement · DONE — rate frozen; no supplier-revision risk.</p></div></div>
+      <div class="cond-item"><div class="cond-idx">✓</div><div class="cond-body"><b>LC margin / provision secured in bank</b><p>Owner: Finance + Treasury · DONE — BDT cash to fund quantified; deferred rate locked.</p></div></div>
+      <div class="cond-item"><div class="cond-idx">✓</div><div class="cond-body"><b>FX rate counted in costing</b><p>Owner: Treasury · DONE — USD 518,000 conversion embedded in the landed-cost build.</p></div></div>
     </div>
     <div class="card">
       <h2>Route &amp; timeline</h2>
-      <div class="step"><div class="step-idx">1</div><div><b>MD approval</b><span class="tag">PENDING</span><p>Final sign-off on this deck (LC ≈ 8.39 Cr → &gt;5 Cr band).</p></div></div>
-      <div class="step"><div class="step-idx done">2</div><div><b>PO creation</b><span class="tag">PI LOCKED ✓</span><p>Procurement raises PO — 450,000 KG × USD 1.492.</p></div></div>
-      <div class="step"><div class="step-idx done">3</div><div><b>LC opening (UPAS)</b><span class="tag">MARGIN SECURED ✓</span><p>Treasury opens; margin locked in bank.</p></div></div>
-      <div class="step"><div class="step-idx">4</div><div><b>Shipment → Nov–Dec-26 arrival</b><p>Mid-Nov shipment · 25d lead · customs clearance &amp; inland transport.</p></div></div>
-      <div class="step"><div class="step-idx">5</div><div><b>Dec-26 consumption</b><p>Material into production; safety stock maintained.</p></div></div>
+      <div class="step"><div class="step-idx">1</div><div><b>MD approval</b><span class="tag">PENDING</span><p>Final sign-off on this deck (LC ≈ 6.48 Cr → &gt;5 Cr band).</p></div></div>
+      <div class="step"><div class="step-idx done">2</div><div><b>PO creation</b><span class="tag">PI LOCKED ✓</span><p>Procurement raises PO — 350,000 KG × USD 1.48.</p></div></div>
+      <div class="step"><div class="step-idx done">3</div><div><b>LC opening (Deferred)</b><span class="tag">MARGIN SECURED ✓</span><p>Treasury opens; margin locked in bank.</p></div></div>
+      <div class="step"><div class="step-idx">4</div><div><b>Shipment → Dec-26 / Jan-27 arrival</b><p>50d lead · customs clearance &amp; inland transport.</p></div></div>
+      <div class="step"><div class="step-idx">5</div><div><b>Jan-27 consumption</b><p>Material into production; safety stock maintained.</p></div></div>
       <div style="margin-top:14px;">
-        <span class="chip chip-ok">APPROVE · 75/100</span>
+        <span class="chip chip-ok">APPROVE · 78/100</span>
         <span class="chip chip-ok">0 blockers · 0 conditions</span>
-        <span class="chip chip-info">UPAS</span>
-        <span class="chip chip-info">China origin</span>
+        <span class="chip chip-info">Deferred</span>
+        <span class="chip chip-info">Term contract</span>
       </div>
     </div>
   </div>
 
-  <!-- ============ 2b. CS (Comparative Statement) ============ -->
-  <div class="grid g2" style="margin-bottom:16px;">
-    <div class="card">
-      <h2>Comparative Statement — PP Yarn (Sinopec T03), 450 MT</h2>
-      <table>
-        <tr><th>Supplier</th><th>Origin</th><th class="num">Price (USD/MT)</th><th>Shipment</th><th class="num">Lead</th><th>Status</th></tr>
-        <tr><td><b>Echo (Sinopec)</b></td><td>China</td><td class="num"><b>1,492</b></td><td>Mid Nov</td><td class="num">25d</td><td><span class="chip chip-sel">SELECTED ✓ LOCKED</span></td></tr>
-        <tr><td>Reliance (Emeraude)</td><td>India</td><td class="num">1,500</td><td>End Nov</td><td class="num">25d</td><td><span class="chip chip-info">Quoted</span></td></tr>
-        <tr><td>IRMS (Jinneng)</td><td>China</td><td class="num">1,500</td><td>Mid Nov</td><td class="num">25d</td><td><span class="chip chip-info">Quoted</span></td></tr>
-        <tr><td>IRMS (NSRP)</td><td>Vietnam</td><td class="num">1,525</td><td>Mid Nov</td><td class="num">35d</td><td><span class="chip chip-gap">Not approved grade</span></td></tr>
-        <tr><td>Qingdao (Sinopec)</td><td>China</td><td class="num">1,550</td><td>Mid Nov</td><td class="num">25d</td><td><span class="chip chip-info">Quoted</span></td></tr>
-        <tr><td>Engro (Sinopec)</td><td>China</td><td class="num">1,560</td><td>End Nov</td><td class="num">25d</td><td><span class="chip chip-info">Quoted</span></td></tr>
-      </table>
-      <div class="muted" style="font-size:11.5px; margin-top:10px;">
-        Negotiated <b>USD 1,492</b> with Echo (Sinopec) — <b>−USD 8 vs their list</b> and the <b>lowest approved grade</b> across 6 quotes.
-        NSRP (Vietnam) rejected on unapproved grade despite competitive price.
-      </div>
-    </div>
-    <div class="card">
-      <h2>Quotation spread (USD/MT)</h2>
-      <div class="chart-box" style="height:260px;"><canvas id="csChart"></canvas></div>
-      <div class="legend">
-        Selected <b style="color:var(--upas);">Echo · 1,492</b> beats the market floor (1,500) and max (1,560).
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ 2c. 18-month S&OP plan ============ -->
+  <!-- ============ 2b. 18-month S&OP plan ============ -->
   <div class="card" style="margin-bottom:16px;">
     <h2>18-month S&amp;OP plan — Sales vs Production vs Procurement (PP Yarn)</h2>
     <div class="chart-box" style="height:340px;"><canvas id="sop"></canvas></div>
     <div class="legend">
       Left axis = <b>Pcs (million bags)</b> for Sales &amp; Production Plan · Right axis = <b>MT</b> for PP Yarn requirement (procurement signal).
-      Strategy = <b>Term-Contract / Spot</b> mix across the plan; <b>this LC is 100% Spot</b>. Booking of <b>450 MT</b> ≈ 1.1 months of yarn draw (≈ 420 MT/mo).
+      Strategy = <b>Term-Contract / Spot</b> mix across the plan; <b>this LC is a Term Contract</b>. Booking of <b>350 MT</b> ≈ 0.8 months of yarn draw (≈ 420 MT/mo).
     </div>
   </div>
 
@@ -335,61 +301,62 @@
   <div class="card" style="margin-bottom:16px;">
     <h2>Stock position — PP Yarn (at booking)</h2>
     <div class="grid g5" style="margin-bottom:12px;">
-      <div class="stock-tile"><div class="sv" style="color:var(--good);">46</div><div class="sl">Days at hand</div><div class="sn">vs safety 45d · +1d</div></div>
-      <div class="stock-tile"><div class="sv" style="color:var(--upas);">20</div><div class="sl">Days in transit</div><div class="sn">incoming</div></div>
-      <div class="stock-tile"><div class="sv">35</div><div class="sl">Lead time (days)</div><div class="sn">shipment → factory</div></div>
+      <div class="stock-tile"><div class="sv" style="color:var(--good);">47</div><div class="sl">Days at hand</div><div class="sn">vs safety 45d · +2d</div></div>
+      <div class="stock-tile"><div class="sv" style="color:var(--upas);">26</div><div class="sl">Days in transit</div><div class="sn">incoming</div></div>
+      <div class="stock-tile"><div class="sv" style="color:var(--warn);">50</div><div class="sl">Lead time (days)</div><div class="sn">shipment → factory</div></div>
       <div class="stock-tile"><div class="sv">45</div><div class="sl">Safety stock (days)</div><div class="sn">target buffer</div></div>
-      <div class="stock-tile"><div class="sv" style="color:var(--accent);">66</div><div class="sl">Total cover (days)</div><div class="sn">46 hand + 20 transit</div></div>
+      <div class="stock-tile"><div class="sv" style="color:var(--accent);">73</div><div class="sl">Total cover (days)</div><div class="sn">47 hand + 26 transit</div></div>
     </div>
     <div class="muted" style="font-size:12px;">
-      <b>Cover 66d</b> vs ideal <b>80d</b> (safety 45 + lead 35) — <b style="color:var(--warn);">slightly tight</b>.
-      Arrival <b>Nov–Dec-26</b> bridges the Dec-26 consumption window; booking now prevents a stock-out (Middle-East supply stopped).
-      Monthly draw ≈ <b>420 MT</b>; this LC (450 MT) restores ~1.1 months of cover.
+      <b>Cover 73d</b> vs ideal <b>95d</b> (safety 45 + lead 50) — <b style="color:var(--warn);">tight</b> due to the longer 50d lead.
+      Arrival <b>Dec-26 / Jan-27</b> bridges the Jan-27 consumption window; booking now prevents a stock-out (Middle-East supply stopped).
+      Monthly draw ≈ <b>420 MT</b>; this LC (350 MT) restores ~0.8 months of cover.
     </div>
   </div>
 
-  <!-- ============ 5. Financial impact (P&L, Cash Flow, CCC, CM) in Cr ============ -->
+  <!-- ============ 5. Financial impact (P&L, Cash Flow, CCC, CM) ============ -->
   <div class="grid g2" style="margin-bottom:16px;">
     <div class="card">
       <h2>P&amp;L impact (Nov-26, budget vs proposed) — Cr</h2>
       <table>
         <tr><th>Metric</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Δ</th></tr>
         <tr><td>Net sales revenue</td><td class="num">19.90</td><td class="num">20.37</td><td class="num pos">+0.47</td></tr>
-        <tr><td>Gross margin</td><td class="num">3.00</td><td class="num">3.06</td><td class="num pos">+0.06</td></tr>
-        <tr><td>EBITDA</td><td class="num">3.50</td><td class="num">3.56</td><td class="num pos">+0.06</td></tr>
-        <tr><td>EBT</td><td class="num">2.64</td><td class="num">2.68</td><td class="num pos">+0.04</td></tr>
-        <tr><td><b>Net income after tax</b></td><td class="num"><b>1.91</b></td><td class="num"><b>1.95</b></td><td class="num pos"><b>+0.03</b></td></tr>
+        <tr><td>Gross margin</td><td class="num">3.00</td><td class="num">3.09</td><td class="num pos">+0.09</td></tr>
+        <tr><td>EBITDA</td><td class="num">3.50</td><td class="num">3.59</td><td class="num pos">+0.09</td></tr>
+        <tr><td>EBT</td><td class="num">2.64</td><td class="num">2.72</td><td class="num pos">+0.08</td></tr>
+        <tr><td><b>Net income after tax</b></td><td class="num"><b>1.91</b></td><td class="num"><b>1.97</b></td><td class="num pos"><b>+0.06</b></td></tr>
       </table>
       <div class="muted" style="font-size:11.5px; margin-top:10px;">
-        Material rate <b style="color:var(--warn);">+18.4%</b> vs last PO; sales price pass-through (bag 26→27) keeps NPAT <b class="pos">+0.03 Cr</b> vs budget.
+        Rate <b style="color:var(--good);">−0.8% vs last PO</b>; sales price pass-through (bag 29→30) keeps NPAT <b class="pos">+0.06 Cr</b> vs budget.
       </div>
     </div>
     <div class="card">
       <h2>Cash flow statement effect — Cr</h2>
       <table>
         <tr><th>Particulars</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Δ</th></tr>
-        <tr><td>Net income</td><td class="num">1.91</td><td class="num">1.95</td><td class="num pos">+0.03</td></tr>
-        <tr><td>Δ Inventory</td><td class="num">0.57</td><td class="num">−0.24</td><td class="num neg">−0.81</td></tr>
-        <tr><td>Δ AP</td><td class="num">0.29</td><td class="num">1.18</td><td class="num pos">+0.89</td></tr>
-        <tr><td>Δ AR</td><td class="num">−0.22</td><td class="num">−1.28</td><td class="num neg">−1.07</td></tr>
-        <tr><td>Δ Tax provision</td><td class="num">0.73</td><td class="num">0.74</td><td class="num pos">+0.01</td></tr>
-        <tr><td><b>Cash flow from operations</b></td><td class="num"><b>4.47</b></td><td class="num"><b>3.52</b></td><td class="num neg"><b>−0.94</b></td></tr>
+        <tr><td>Net income</td><td class="num">1.91</td><td class="num">1.97</td><td class="num pos">+0.06</td></tr>
+        <tr><td>Depreciation</td><td class="num">0.94</td><td class="num">0.94</td><td class="num muted">0.00</td></tr>
+        <tr><td>Δ Inventory</td><td class="num">0.57</td><td class="num">−0.17</td><td class="num neg">−0.74</td></tr>
+        <tr><td>Δ AP</td><td class="num">0.29</td><td class="num">1.10</td><td class="num pos">+0.81</td></tr>
+        <tr><td>Δ AR</td><td class="num">−0.22</td><td class="num">−1.28</td><td class="num neg">−1.06</td></tr>
+        <tr><td>Δ Tax provision</td><td class="num">0.73</td><td class="num">0.75</td><td class="num pos">+0.02</td></tr>
+        <tr><td><b>Cash flow from operations</b></td><td class="num"><b>5.41</b></td><td class="num"><b>4.50</b></td><td class="num neg"><b>−0.91</b></td></tr>
       </table>
       <div class="muted" style="font-size:11.5px; margin-top:10px;">
-        CFO falls on higher inventory build + AR; partially absorbed by <b>AP +0.89 Cr</b> (UPAS defers cash outflow).
+        CFO falls on higher inventory build + AR; partially absorbed by <b>AP +0.81 Cr</b> (deferred payment defers cash outflow).
       </div>
     </div>
     <div class="card">
       <h2>Cash operating cycle (CCC, days)</h2>
       <table>
         <tr><th>Metric</th><th class="num">Budget</th><th class="num">Rate effect</th><th class="num">Δ</th></tr>
-        <tr><td>DSO</td><td class="num">70.80</td><td class="num">70.78</td><td class="num pos">−0.02</td></tr>
+        <tr><td>DSO</td><td class="num">70.80</td><td class="num">71.00</td><td class="num warn-t">+0.20</td></tr>
         <tr><td>DPO</td><td class="num">66.00</td><td class="num">66.00</td><td class="num muted">0.00</td></tr>
-        <tr><td>DIO</td><td class="num">121.27</td><td class="num">119.41</td><td class="num pos">−1.86</td></tr>
-        <tr><td><b>CCC</b></td><td class="num"><b>126.07</b></td><td class="num"><b>124.19</b></td><td class="num pos"><b>−1.88</b></td></tr>
+        <tr><td>DIO</td><td class="num">121.27</td><td class="num">120.00</td><td class="num pos">−1.27</td></tr>
+        <tr><td><b>CCC</b></td><td class="num"><b>126.07</b></td><td class="num"><b>125.00</b></td><td class="num pos"><b>−1.07</b></td></tr>
       </table>
       <div class="muted" style="font-size:11.5px; margin-top:10px;">
-        CCC improves −1.88d (faster DIO). UPAS keeps the cash-cycle neutral despite the larger inventory position.
+        CCC improves −1.07d (faster DIO). Deferred payment keeps the cash-cycle neutral despite the larger inventory position.
       </div>
     </div>
     <div class="card">
@@ -397,13 +364,13 @@
       <table>
         <tr><th>Metric</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Δ</th></tr>
         <tr><td>Per bag (BDT)</td><td class="num">5.00</td><td class="num">5.25</td><td class="num pos">+0.25</td></tr>
-        <tr><td>Percentage</td><td class="num">19.23%</td><td class="num">19.44%</td><td class="num pos">+0.21%</td></tr>
+        <tr><td>Percentage</td><td class="num">17.24%</td><td class="num">17.50%</td><td class="num pos">+0.26%</td></tr>
         <tr><td>Total (Cr)</td><td class="num">3.73</td><td class="num">3.91</td><td class="num pos">+0.19</td></tr>
-        <tr><td>Bag sale budget</td><td class="num">26</td><td class="num">27</td><td class="num pos">+1</td></tr>
+        <tr><td>Bag sale budget</td><td class="num">29</td><td class="num">30</td><td class="num pos">+1</td></tr>
         <tr><td>Bag volume</td><td class="num">7,450,000</td><td class="num">7,450,000</td><td class="num muted">0</td></tr>
       </table>
       <div class="muted" style="font-size:11.5px; margin-top:10px;">
-        Price pass-through (bag 26→27) lifts CM +0.25/bag (+0.21 pts) on unchanged volume.
+        Price pass-through (bag 29→30) lifts CM +0.25/bag (+0.26 pts) on unchanged volume.
       </div>
     </div>
   </div>
@@ -414,26 +381,26 @@
       <h2>Landed-cost build — Cr</h2>
       <table>
         <tr><th>Component</th><th class="num">Amount (Cr)</th></tr>
-        <tr><td>PI value (USD 671,400)</td><td class="num">8.39</td></tr>
+        <tr><td>PI value (USD 518,000)</td><td class="num">6.48</td></tr>
         <tr><td>Insurance (ICC-C + VAT + stamp)</td><td class="num">0.03</td></tr>
-        <tr><td>LC opening commission</td><td class="num">0.03</td></tr>
+        <tr><td>LC opening commission</td><td class="num">0.02</td></tr>
         <tr><td>Swift + VAT + credit + doc accept + misc</td><td class="num">0.02</td></tr>
-        <tr><td>Custom duty &amp; taxes (CD/AT/AIT/ATV)</td><td class="num">2.39</td></tr>
-        <tr><td>Inland + C&amp;F + port + empty + unloading</td><td class="num">0.10</td></tr>
-        <tr><td><b>APX landed cost (gross)</b></td><td class="num"><b>10.96</b></td></tr>
-        <tr><td><b>Net APX landed cost (excl. VAT &amp; AIT)</b></td><td class="num warn-t"><b>9.01</b></td></tr>
+        <tr><td>Custom duty &amp; taxes (CD/AT/AIT/ATV)</td><td class="num">1.84</td></tr>
+        <tr><td>Inland + C&amp;F + port + empty + unloading</td><td class="num">0.08</td></tr>
+        <tr><td><b>APX landed cost (gross)</b></td><td class="num"><b>8.46</b></td></tr>
+        <tr><td><b>Net APX landed cost (excl. VAT &amp; AIT)</b></td><td class="num warn-t"><b>6.95</b></td></tr>
       </table>
       <div class="muted" style="font-size:11.5px; margin-top:10px;">
-        Net landed = <b>BDT 200.14/KG</b> vs budget <b>BDT 184.00/KG</b> (+8.8%). AT 2% / ATV 0% reclaimable on import. FX already embedded in costing.
+        Net landed = <b>BDT 198.65/KG</b> vs budget <b>BDT 184.00/KG</b> (+8.0%). AT 2% / ATV 0% reclaimable. FX already embedded in costing.
       </div>
     </div>
     <div class="card">
       <h2>Ensuring shareholder value</h2>
       <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Material availability</b> — secure the product (Middle-East supply stopped) to keep production smooth.</span></div>
-      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Best available price</b> — NPAT at this rate = <b>1.95 Cr</b>; +0.03 Cr vs budget after price pass-through.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Cost saving</b> — NPAT at this rate = <b>1.97 Cr</b>; +0.06 Cr vs budget; rate −USD 70/MT vs market.</span></div>
       <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Supply continuity</b> — timely booking + LC opening reduce stock-out and production-disruption risk.</span></div>
       <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Demand-based procurement</b> — aligned to the 18-month sales &amp; production plan.</span></div>
-      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Flexible strategy</b> — 100% spot as Middle-East supply is postponed.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Flexible strategy</b> — Term Contract (this LC) within a Term/Spot mix.</span></div>
     </div>
   </div>
 
@@ -454,11 +421,11 @@
     </div>
     <div class="card">
       <h2>Risk &amp; return balance</h2>
-      <div class="risk-row"><span class="risk-ico" style="background:var(--bad);"></span><span><b>Supply risk</b> — Middle-East supply postponed; material unavailability if not booked now.</span></div>
-      <div class="risk-row"><span class="risk-ico" style="background:var(--bad);"></span><span><b>Price risk</b> — price changing daily; rate is +18.4% vs last PO (USD 1.492 vs 1.26).</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--bad);"></span><span><b>Supply risk</b> — long shipment lead time (50d); material unavailability if not booked now.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--bad);"></span><span><b>Price risk</b> — price changing daily; locking now avoids further upside.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Price advantage</b> — rate is USD 70/MT below current market.</span></div>
+      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Return</b> — product availability ensured; smooth production.</span></div>
       <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>FX</b> — rate already counted in costing (no unhedged gap).</span></div>
-      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Return</b> — product availability ensured; smooth production; best available market price locked.</span></div>
-      <div class="risk-row"><span class="risk-ico" style="background:var(--good);"></span><span><b>Counterparty</b> — Sinopec (China) tier-1 petrochemical; low default risk.</span></div>
     </div>
   </div>
 
@@ -467,9 +434,9 @@
     <h2>Price trend analysis + 3-month forward forecast (USD/KG)</h2>
     <div class="chart-box" style="height:340px;"><canvas id="priceTrend"></canvas></div>
     <div class="legend">
-      <b>Actual</b> monthly weighted-avg (Jul-24 → Sep-26): trough <b>0.82</b> (Nov/Dec-25) → spike <b>1.374</b> (Apr-26) → <b>1.26</b> (Sep-26, SABIC).
-      <b style="color:var(--upas);">Statistical forecast</b> (Holt's double-exponential smoothing, α=0.95 β=0.10) → Oct <b>1.27</b>, Nov <b>1.29</b>, Dec <b>1.30</b> (shaded 90% band).
-      <b style="color:var(--warn);">Proposed</b> <b>1.492</b> sits <b>above the model trend</b> but <b style="color:var(--good);">below today's market quotes (1.50–1.56)</b> — the supply shock repriced spot faster than history alone predicts.
+      <b>Actual</b> monthly weighted-avg (Jul-24 → Oct-26): trough <b>0.82</b> (Nov-25) → spike <b>1.374</b> (Apr-26) → <b>1.492</b> (Oct-26, KOCO).
+      <b style="color:var(--upas);">Statistical forecast</b> (Holt's double-exponential smoothing, α=0.95 β=0.10) → Nov <b>1.51</b>, Dec <b>1.55</b>, Jan <b>1.58</b> (shaded 90% band).
+      <b style="color:var(--warn);">Proposed</b> <b>1.48</b> sits <b style="color:var(--good);">below both the trend and last PO</b> — locking a below-market rate before prices keep climbing.
     </div>
   </div>
 
@@ -477,11 +444,11 @@
   <div class="card" style="margin-bottom:16px;">
     <h2>Purchase history — PP Yarn Grade (item 11111)</h2>
     <div class="grid g5" style="margin-bottom:14px;">
-      <div class="stock-tile"><div class="sv">48</div><div class="sl">POs</div></div>
-      <div class="stock-tile"><div class="sv">9</div><div class="sl">Suppliers</div></div>
-      <div class="stock-tile"><div class="sv">10.58M</div><div class="sl">Total KG</div></div>
-      <div class="stock-tile"><div class="sv">USD 11.04M</div><div class="sl">Total value</div></div>
-      <div class="stock-tile"><div class="sv">1.044</div><div class="sl">Wtd-avg USD/KG</div></div>
+      <div class="stock-tile"><div class="sv">49</div><div class="sl">POs</div></div>
+      <div class="stock-tile"><div class="sv">10</div><div class="sl">Suppliers</div></div>
+      <div class="stock-tile"><div class="sv">10.97M</div><div class="sl">Total KG</div></div>
+      <div class="stock-tile"><div class="sv">USD 11.63M</div><div class="sl">Total value</div></div>
+      <div class="stock-tile"><div class="sv">1.060</div><div class="sl">Wtd-avg USD/KG</div></div>
     </div>
     <table>
       <tr><th>Period</th><th>Supplier</th><th class="num">Price (USD/KG)</th><th class="num">Qty (KG)</th><th class="num">Value (USD)</th></tr>
@@ -493,21 +460,22 @@
       <tr><td>Jul-26</td><td>SABIC Asia Pacific</td><td class="num">1.05</td><td class="num">312,000</td><td class="num">327,600</td></tr>
       <tr><td>Aug-26</td><td>SABIC Asia Pacific</td><td class="num">1.20</td><td class="num">341,250</td><td class="num">409,500</td></tr>
       <tr><td>Sep-26</td><td>SABIC Asia Pacific</td><td class="num">1.26</td><td class="num">288,000</td><td class="num">362,880</td></tr>
-      <tr><td><b>Oct-26 (proposed)</b></td><td><b>Echo · Sinopec</b></td><td class="num"><b>1.492</b></td><td class="num"><b>450,000</b></td><td class="num"><b>671,400</b></td></tr>
+      <tr><td>Oct-26</td><td>KOCO Group</td><td class="num">1.492</td><td class="num">392,000</td><td class="num">584,864</td></tr>
+      <tr><td><b>Nov-26 (proposed)</b></td><td><b>Sabic Grade 5001P</b></td><td class="num"><b>1.48</b></td><td class="num"><b>350,000</b></td><td class="num"><b>518,000</b></td></tr>
     </table>
     <div class="muted" style="font-size:11.5px; margin-top:10px;">
-      Price bottomed at <b>0.82</b> (Nov-25), then spiked <b>+68%</b> to <b>1.374</b> (Apr-26) on Middle-East tightness, eased to <b>1.05</b> (Jul-26), and is
-      re-climbing (<b>1.20 → 1.26</b> Aug–Sep-26). The proposed <b>1.492</b> reflects the renewed supply shock; historical full-series wtd-avg = <b>1.044</b>.
+      Price bottomed at <b>0.82</b> (Nov-25), spiked <b>+68%</b> to <b>1.374</b> (Apr-26), and re-climbed to <b>1.492</b> (Oct-26, KOCO) on Middle-East tightness.
+      The proposed <b>1.48</b> is <b class="pos">−0.8% vs last PO</b> and <b class="pos">below the rising trend</b>; full-series wtd-avg = <b>1.060</b>.
     </div>
   </div>
 
   <div class="foot">
-    <b>Decision-support only — not a self-approval.</b> Route to <b>MD for final sign-off</b> → PO (PI locked) → LC (UPAS, margin secured).
-    · LC value <b>8.39 Cr BDT</b> (&gt;5 Cr DoA band → Procurement Head + CFO + MD).
-    · <b>All BDT figures in Crore (Cr); 1 Cr = 10,000,000 BDT.</b> USD amounts &amp; unit rates (USD/KG, BDT/KG, BDT/bag) shown as-is.
-    · Sources: "PP Yarn LC" workbook (10 tabs: SOD, Risk &amp; Return, 18 Months Plan, 18 Months MRP, Business Case, CS, Shareholder Value, PNL, Costing, Historical Data).
-    · <b>Forecast note:</b> Meta Prophet not installed in this environment — used Holt's double-exponential smoothing (α=0.95, β=0.10) as an equivalent single-series trend forecast; 90% band = ±1.64σ.
-    · <b>DATA_GAP:</b> PNL gross-margin Δ (+0.06 Cr) does not fully reconcile with the +16.14/KG landed delta — flagged for Finance to confirm the price pass-through assumption.
+    <b>Decision-support only — not a self-approval.</b> Route to <b>MD for final sign-off</b> → PO (PI locked) → LC (Deferred, margin secured).
+    · LC value <b>6.48 Cr BDT</b> (&gt;5 Cr DoA band → Procurement Head + CFO + MD).
+    · <b>BDT figures shown in Crore (Cr) where noted; 1 Cr = 10,000,000 BDT.</b> USD amounts &amp; unit rates (USD/KG, BDT/KG, BDT/bag) shown as-is.
+    · Sources: "PP Yarn LC" workbook (9 tabs: SOD, Risk &amp; Return, 18 Months Plan, 18 Months MRP, Business Case, Shareholder Value, PNL, Costing, Historical Data).
+    · <b>Forecast note:</b> Meta Prophet not installed — used Holt's double-exponential smoothing (α=0.95, β=0.10); 90% band = ±1.64σ.
+    · <b>DATA_GAPs to confirm:</b> ① No CS sheet in this workbook (market comparison taken from Risk &amp; Return "−USD 70/MT"). ② PNL note "18.41% higher than last PO" appears stale — actual is −0.8% (1.48 vs 1.492). ③ LC term shows "B. Deferred" in the sheet, not "UPAS" as in the request template.
     · LC Decision Orchestrator v1 (equal 20% weights; approve ≥70, hold ≥50).
   </div>
 </div>
@@ -515,14 +483,14 @@
 <script>
 (function(){
   const domains = [
-    {name:'Inventory',   s:80, c:'#27c281'},
-    {name:'Procurement', s:68, c:'#f5a623'},
-    {name:'Finance',     s:76, c:'#27c281'},
+    {name:'Inventory',   s:76, c:'#f5a623'},
+    {name:'Procurement', s:86, c:'#27c281'},
+    {name:'Finance',     s:78, c:'#27c281'},
     {name:'Treasury',    s:80, c:'#27c281'},
-    {name:'Risk',        s:70, c:'#f5a623'},
+    {name:'Risk',        s:68, c:'#f5a623'},
   ];
 
-  const target = 75;
+  const target = 78;
   const fill = document.querySelector('.gauge .fill');
   const C = 402.1;
   const off = C * (1 - target/100);
@@ -547,27 +515,6 @@
         responsive:true, maintainAspectRatio:false,
         scales:{ r:{ min:0, max:100, ticks:{stepSize:20, color:'#8b96b3', backdropColor:'transparent'}, grid:{color:'#2a3350'}, angleLines:{color:'#2a3350'}, pointLabels:{color:'#e8ecf6', font:{size:12}} }},
         plugins:{ legend:{display:false} }
-      }
-    });
-
-    // CS quotation spread
-    const csSup=['Echo (Sinopec)','Reliance (Emeraude)','IRMS (Jinneng)','IRMS (NSRP)','Qingdao (Sinopec)','Engro (Sinopec)'];
-    const csPrice=[1492,1500,1500,1525,1550,1560];
-    const csCol=['#3ec9ff','#4f8cff','#4f8cff','#f0516d','#4f8cff','#4f8cff'];
-    new Chart(document.getElementById('csChart'), {
-      type:'bar',
-      data:{
-        labels: csSup,
-        datasets:[{ label:'Price (USD/MT)', data:csPrice, backgroundColor:csCol, borderRadius:4 }]
-      },
-      options:{
-        indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        scales:{
-          x:{ min:1450, max:1600, ticks:{ color:'#8b96b3' }, grid:{ color:'#2a3350' } },
-          y:{ ticks:{ color:'#e8ecf6', font:{size:11} }, grid:{ display:false } }
-        },
-        plugins:{ legend:{ display:false },
-          tooltip:{ callbacks:{ label:(c)=>` USD ${c.raw} / MT` } } }
       }
     });
 
@@ -600,12 +547,12 @@
     });
 
     // Price trend + forecast
-    const pLabels=['Jul-24','Aug-24','Sep-24','Oct-24','Nov-24','Dec-24','Jan-25','Feb-25','Mar-25','Apr-25','May-25','Jun-25','Jul-25','Aug-25','Sep-25','Oct-25','Nov-25','Dec-25','Jan-26','Feb-26','Mar-26','Apr-26','May-26','Jun-26','Jul-26','Aug-26','Sep-26','Oct-26','Nov-26','Dec-26'];
-    const pHist=[1.12,1.0706,1.0186,null,0.97,null,0.9789,0.98,1.0,0.9703,0.93,null,0.9233,0.91,0.86,0.83,0.82,null,null,null,1.3358,1.3741,null,1.30,1.05,1.20,1.26,null,null,null];
-    const pFore=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1.272,1.287,1.302];
-    const pProp=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1.492,null,null];
-    const pLo=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1.07,1.00,0.95];
-    const pHi=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1.48,1.57,1.65];
+    const pLabels=['Jul-24','Aug-24','Sep-24','Oct-24','Nov-24','Dec-24','Jan-25','Feb-25','Mar-25','Apr-25','May-25','Jun-25','Jul-25','Aug-25','Sep-25','Oct-25','Nov-25','Dec-25','Jan-26','Feb-26','Mar-26','Apr-26','May-26','Jun-26','Jul-26','Aug-26','Sep-26','Oct-26','Nov-26','Dec-26','Jan-27'];
+    const pHist=[1.12,1.0706,1.0186,null,0.97,null,0.9789,0.98,1.0,0.9703,0.93,null,0.9233,0.91,0.86,0.83,0.82,null,null,null,1.3358,1.3741,null,1.30,1.05,1.20,1.26,1.492,null,null,null];
+    const pFore=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1.513,1.546,1.578];
+    const pProp=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1.48,null,null];
+    const pLo=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1.27,1.20,1.15];
+    const pHi=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1.76,1.89,2.00];
 
     new Chart(document.getElementById('priceTrend'), {
       type:'line',
@@ -616,14 +563,14 @@
           { label:'Forecast (Holt)', data:pFore, borderColor:'#3ec9ff', backgroundColor:'#3ec9ff', borderWidth:2, borderDash:[5,3], pointRadius:3, spanGaps:false },
           { label:'90% band (lo)', data:pLo, borderColor:'rgba(62,201,255,.35)', backgroundColor:'rgba(62,201,255,.35)', borderWidth:1, borderDash:[2,3], pointRadius:0, spanGaps:false },
           { label:'90% band (hi)', data:pHi, borderColor:'rgba(62,201,255,.35)', backgroundColor:'rgba(62,201,255,.35)', borderWidth:1, borderDash:[2,3], pointRadius:0, spanGaps:false },
-          { label:'Proposed (this LC)', data:pProp, borderColor:'#f5a623', backgroundColor:'#f5a623', pointBackgroundColor:'#f5a623', pointRadius:8, pointStyle:'rectRot', borderWidth:2, spanGaps:false }
+          { label:'Proposed (this LC)', data:pProp, borderColor:'#27c281', backgroundColor:'#27c281', pointBackgroundColor:'#27c281', pointRadius:8, pointStyle:'rectRot', borderWidth:2, spanGaps:false }
         ]
       },
       options:{
         responsive:true, maintainAspectRatio:false,
         scales:{
           x:{ ticks:{ color:'#8b96b3', maxRotation:60, font:{size:8} }, grid:{ display:false } },
-          y:{ min:0.7, max:1.9, ticks:{ stepSize:0.2, color:'#8b96b3' }, grid:{ color:'#2a3350' } }
+          y:{ min:0.7, max:2.1, ticks:{ stepSize:0.2, color:'#8b96b3' }, grid:{ color:'#2a3350' } }
         },
         plugins:{ legend:{ labels:{ color:'#e8ecf6', boxWidth:12, font:{size:10} } } }
       }
