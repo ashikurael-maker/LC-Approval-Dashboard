@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SCM Strategic Savings Report — October 2026 — Supply Chain Department</title>
+<style>
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:#f3f4f6;
+    color:#1a1d23;
+    font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;
+    padding:28px 16px 60px;
+  }
+  .wrap{ max-width:1280px; margin:0 auto; }
+  h1{ font-size:20px; margin:0 0 4px; }
+  .sub{ color:#5a6270; font-size:13px; margin:0 0 18px; }
+  .section-h1{ margin-top:34px; padding-top:22px; border-top:1px solid #dfe2e7; }
+  .footnote{ font-size:11.5px; color:#5a6270; margin:10px 2px 0; line-height:1.5; }
+  .summary{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
+  .summary .box{
+    background:#fff; border:1px solid #dfe2e7; border-radius:6px; padding:10px 16px;
+  }
+  .summary .box .k{ font-size:11px; color:#5a6270; text-transform:uppercase; letter-spacing:0.4px; }
+  .summary .box .v{ font-size:17px; font-weight:700; margin-top:2px; }
+  .section-label{
+    font-size:11px; color:#5a6270; text-transform:uppercase; letter-spacing:0.4px; margin:0 0 6px;
+  }
+  .chart-row{ display:flex; gap:22px; align-items:stretch; margin-bottom:18px; flex-wrap:wrap; }
+  .sbu-panel{ flex:1 1 640px; min-width:0; }
+  .chart-flex{ display:flex; gap:22px; align-items:stretch; flex-wrap:wrap; }
+  .vbox-list{ flex:0 0 300px; flex-wrap:nowrap; flex-direction:column; gap:8px; margin-bottom:0; }
+  .vbox-list .box{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 14px; }
+  .vbox-list .box .k{ white-space:nowrap; }
+  .vbox-list .box .v{ margin-top:0; white-space:nowrap; }
+  .chart-card{
+    flex:0 0 300px; background:#fff; border:1px solid #dfe2e7; border-radius:10px;
+    padding:18px; display:flex; flex-direction:column; align-items:center; gap:14px;
+  }
+  .donut{ width:160px; height:160px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .donut-hole{
+    width:98px; height:98px; border-radius:50%; background:#fff;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 0 0 1px #eef0f3;
+  }
+  .donut-hole-label{ font-size:10px; color:#5a6270; text-transform:uppercase; letter-spacing:0.4px; }
+  .donut-hole-value{ font-size:14px; font-weight:700; color:#1a1d23; margin-top:2px; }
+  .chart-legend{ width:100%; display:flex; flex-direction:column; gap:7px; }
+  .legend-item{ display:flex; align-items:center; gap:8px; font-size:12px; color:#2b2f36; }
+  .legend-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .legend-label{ flex:1; }
+  .legend-pct{ font-weight:700; color:#5a6270; }
+  .bar-chart-card{
+    flex:1 1 420px; min-width:0; background:#fff; border:1px solid #dfe2e7; border-radius:10px; padding:18px 20px;
+  }
+  .bar-chart-card .section-label{ margin:0 0 6px; }
+  .bar-chart-total{ font-size:13px; color:#5a6270; margin-bottom:14px; }
+  .bar-chart-total b{ color:#1a1d23; font-size:15px; }
+  .bar-chart-list{ display:flex; flex-direction:column; gap:11px; }
+  .bar-row{ width:100%; }
+  .bar-label-line{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:12px; color:#2b2f36; margin-bottom:4px; }
+  .bar-label{ font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bar-value{ font-weight:700; color:#1a1d23; white-space:nowrap; flex-shrink:0; }
+  .bar-pct{ font-weight:400; color:#5a6270; }
+  .bar-track{ background:#eef0f3; border-radius:5px; height:11px; overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:5px; }
+  .table-container{ background:#fff; border:1px solid #dfe2e7; border-radius:6px; overflow-x:auto; }
+  table{ border-collapse:collapse; width:100%; min-width:1150px; font-size:12.8px; }
+  thead th{
+    background:#f7f8fa; text-align:left; padding:9px 10px; border-bottom:2px solid #dfe2e7;
+    font-size:11.5px; text-transform:uppercase; letter-spacing:0.3px; color:#3a3f47; position:sticky; top:0;
+  }
+  thead th.num{ text-align:right; }
+  tbody td{ padding:8px 10px; border-bottom:1px solid #edeff2; vertical-align:top; }
+  tbody tr:nth-child(even){ background:#fafbfc; }
+  td.cat{ font-weight:600; }
+  td.mono{ font-family:ui-monospace,Consolas,monospace; font-size:12px; color:#4a4f58; white-space:nowrap; }
+  td.num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  td.savings{ font-weight:600; color:#1a56db; }
+  td.good{ color:#2f9e44; font-weight:700; }
+  td.bad{ color:#c92a2a; font-weight:700; }
+  .dash{ color:#a2a8b1; }
+  tfoot td{ padding:10px; border-top:2px solid #dfe2e7; font-weight:700; background:#f7f8fa; }
+  tfoot td.num{ text-align:right; color:#1a56db; }
+  .pill{ display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700; }
+  .pill.good{ background:#d3f9d8; color:#2b8a3e; }
+  .pill.bad{ background:#ffe3e3; color:#c92a2a; }
+  .methodology{
+    background:#fff; border:1px solid #dfe2e7; border-radius:6px; padding:16px 18px; margin-bottom:18px;
+  }
+  .methodology h2{ font-size:14px; margin:0 0 6px; color:#1a1d23; }
+  .methodology .lead{ font-size:12.5px; color:#5a6270; margin:0 0 12px; line-height:1.5; }
+  .chart-wrapper{ background:#fff; border:1px solid #dfe2e7; border-radius:10px; padding:18px 20px; margin-bottom:18px; }
+  .chart-wrapper .section-label{ margin:0 0 6px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<h1>SCM Strategic Savings Report — October 2026</h1>
+<p class="sub">Supply Chain Department · Source: SCM_Savings Target OCT 26 (Target Oct 26, Cluster Target Oct vs Achievement, and Oct master-data files)</p>
+
+<div class="summary">
+  <div class="box"><div class="k">Categories</div><div class="v">7</div></div>
+  <div class="box"><div class="k">Target Oct 2026 (BDT)</div><div class="v">৳54,910,000</div></div>
+  <div class="box"><div class="k">Achievement Oct 2026 (BDT)</div><div class="v">৳97,758,671</div></div>
+  <div class="box"><div class="k">Oct Achievement %</div><div class="v">178.03%</div></div>
+</div>
+
+<!-- ============ TARGET vs ACHIEVEMENT (OCTOBER) ============ -->
+<h1 class="section-h1">Target vs Achievement — October 2026</h1>
+<p class="sub">Category-wise monthly target vs realised strategic savings. Green = target met, red = below target.</p>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Procurement Category</th>
+        <th class="num">Target Oct 2026 (BDT)</th>
+        <th class="num">Achievement Oct 2026 (BDT)</th>
+        <th class="num">Oct vs Target</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="cat">Direct Material - Building Cluster</td>
+        <td class="num">৳24,000,000</td>
+        <td class="num savings">৳66,261,892</td>
+        <td class="num good">276.1%</td>
+        <td><span class="pill good">Met</span></td>
+      </tr>
+      <tr>
+        <td class="cat">Capex &amp; MRO-Import &amp; Local (Mechanical, Electrical, Vehicle, Civil Constructor &amp; Indirect Purchase Marketing)</td>
+        <td class="num">৳12,910,000</td>
+        <td class="num savings">৳14,091,824</td>
+        <td class="num good">109.2%</td>
+        <td><span class="pill good">Met</span></td>
+      </tr>
+      <tr>
+        <td class="cat">Raw Material-Consumer Cluster (AAFL, ABL, ALEL)</td>
+        <td class="num">৳8,200,000</td>
+        <td class="num savings">৳6,900,011</td>
+        <td class="num bad">84.1%</td>
+        <td><span class="pill bad">Below</span></td>
+      </tr>
+      <tr>
+        <td class="cat">Distribution and Logistics</td>
+        <td class="num">৳4,800,000</td>
+        <td class="num savings">৳4,955,058</td>
+        <td class="num good">103.2%</td>
+        <td><span class="pill good">Met</span></td>
+      </tr>
+      <tr>
+        <td class="cat">Raw Material-Paddy AEL</td>
+        <td class="num">৳2,500,000</td>
+        <td class="num savings">৳2,017,877</td>
+        <td class="num bad">80.7%</td>
+        <td><span class="pill bad">Below</span></td>
+      </tr>
+      <tr>
+        <td class="cat">Packaging Development</td>
+        <td class="num">৳2,000,000</td>
+        <td class="num savings">৳2,198,910</td>
+        <td class="num good">110.0%</td>
+        <td><span class="pill good">Met</span></td>
+      </tr>
+      <tr>
+        <td class="cat">Indirect Procurement- Consumer Electronic</td>
+        <td class="num">৳500,000</td>
+        <td class="num savings">৳1,333,099</td>
+        <td class="num good">266.6%</td>
+        <td><span class="pill good">Met</span></td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>Grand Total</td>
+        <td class="num">৳54,910,000</td>
+        <td class="num">৳97,758,671</td>
+        <td class="num">178.0%</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<!-- ============ CLUSTER TARGET vs ACHIEVEMENT (MONTHLY COMPARISON) ============ -->
+<h1 class="section-h1">Cluster Target vs Achievement — Monthly Comparison (Aug / Sep / Oct)</h1>
+<p class="sub">Target vs achievement for each cluster, with month-over-month achievement trend.</p>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Procurement Category</th>
+        <th class="num">Monthly Target (BDT)</th>
+        <th class="num">Achievement Aug</th>
+        <th class="num">Aug %</th>
+        <th class="num">Achievement Sep</th>
+        <th class="num">Sep %</th>
+        <th class="num">Achievement Oct</th>
+        <th class="num">Oct %</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="cat">Direct Material - Building Cluster</td>
+        <td class="num">৳24,000,000</td>
+        <td class="num">৳34,020,665</td>
+        <td class="num good">141.8%</td>
+        <td class="num">৳41,829,281</td>
+        <td class="num good">174.3%</td>
+        <td class="num savings">৳66,261,892</td>
+        <td class="num good">276.1%</td>
+      </tr>
+      <tr>
+        <td class="cat">Capex &amp; MRO-Import &amp; Local (Mechanical, Electrical, Vehicle, Civil Constructor &amp; Indirect Purchase Marketing)</td>
+        <td class="num">৳12,910,000</td>
+        <td class="num">৳16,045,603</td>
+        <td class="num good">124.3%</td>
+        <td class="num">৳17,707,011</td>
+        <td class="num good">137.2%</td>
+        <td class="num savings">৳14,091,824</td>
+        <td class="num good">109.2%</td>
+      </tr>
+      <tr>
+        <td class="cat">Raw Material-Consumer Cluster (AAFL, ABL, ALEL)</td>
+        <td class="num">৳8,200,000</td>
+        <td class="num">৳39,740,762</td>
+        <td class="num good">484.6%</td>
+        <td class="num">৳16,112,779</td>
+        <td class="num good">196.5%</td>
+        <td class="num savings">৳6,900,011</td>
+        <td class="num bad">84.1%</td>
+      </tr>
+      <tr>
+        <td class="cat">Distribution and Logistics</td>
+        <td class="num">৳4,800,000</td>
+        <td class="num">৳3,522,519</td>
+        <td class="num bad">73.4%</td>
+        <td class="num">৳4,554,177</td>
+        <td class="num bad">94.9%</td>
+        <td class="num savings">৳4,955,058</td>
+        <td class="num good">103.2%</td>
+      </tr>
+      <tr>
+        <td class="cat">Raw Material-Paddy AEL</td>
+        <td class="num">৳2,500,000</td>
+        <td class="num">৳1,118,940</td>
+        <td class="num bad">44.8%</td>
+        <td class="num">৳4,036,325</td>
+        <td class="num good">161.5%</td>
+        <td class="num savings">৳2,017,877</td>
+        <td class="num bad">80.7%</td>
+      </tr>
+      <tr>
+        <td class="cat">Packaging Development</td>
+        <td class="num">৳2,000,000</td>
+        <td class="num">৳2,573,428</td>
+        <td class="num good">128.7%</td>
+        <td class="num">৳4,860,650</td>
+        <td class="num good">243.0%</td>
+        <td class="num savings">৳2,198,910</td>
+        <td class="num good">110.0%</td>
+      </tr>
+      <tr>
+        <td class="cat">Indirect Procurement- Consumer Electronic</td>
+        <td class="num">৳500,000</td>
+        <td class="num">৳521,342</td>
+        <td class="num good">104.3%</td>
+        <td class="num">৳326,945</td>
+        <td class="num bad">65.4%</td>
+        <td class="num savings">৳1,333,099</td>
+        <td class="num good">266.6%</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>Grand Total</td>
+        <td class="num">৳54,910,000</td>
+        <td class="num">৳97,543,259</td>
+        <td class="num">177.6%</td>
+        <td class="num">৳89,427,168</td>
+        <td class="num">162.9%</td>
+        <td class="num">৳97,758,671</td>
+        <td class="num">178.0%</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<!-- ============ CLUSTER MONTHLY COMPARISON CHART ============ -->
+<div class="chart-wrapper">
+  <p class="section-label">Cluster Achievement vs Target — Monthly Trend (Aug / Sep / Oct, % of Target)</p>
+  <div class="bar-chart-total">Dashed red line = 100% of monthly target. Bars above the line exceeded target; bars below missed target.</div>
+  <div style="position:relative; height:440px;">
+    <canvas id="clusterMonthlyChart"></canvas>
+  </div>
+</div>
+
+<script>
+(function () {
+  const labels = [
+    "Direct Material - Building",
+    "Capex & MRO",
+    "Raw Material - Consumer",
+    "Distribution & Logistics",
+    "Raw Material - Paddy AEL",
+    "Packaging Development",
+    "Indirect - Consumer Electronic"
+  ];
+  const aug = [141.75, 124.29, 484.64, 73.39, 44.76, 128.67, 104.27];
+  const sep = [174.29, 137.16, 196.50, 94.88, 161.45, 243.03, 65.39];
+  const oct = [276.09, 109.15, 84.15, 103.23, 80.72, 109.95, 266.62];
+  const ctx = document.getElementById('clusterMonthlyChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Aug', data: aug, backgroundColor: '#cbd5e1', borderRadius: 3 },
+        { label: 'Sep', data: sep, backgroundColor: '#7aa5f5', borderRadius: 3 },
+        { label: 'Oct', data: oct, backgroundColor: '#1a56db', borderRadius: 3 }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12 } } },
+        tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.x + '% of target'; } } },
+        annotation: {
+          annotations: {
+            targetLine: {
+              type: 'line',
+              xMin: 100, xMax: 100,
+              borderColor: '#c92a2a',
+              borderWidth: 2,
+              borderDash: [6, 4],
+              label: {
+                display: true, content: 'Target = 100%', position: 'end',
+                color: '#c92a2a', backgroundColor: 'rgba(201,42,42,0.08)',
+                font: { size: 11, weight: 'bold' }
+              }
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Achievement % of monthly target', color: '#5a6270', font: { size: 12 } },
+          grid: { color: '#eef0f3' },
+          ticks: { callback: function (v) { return v + '%'; } }
+        },
+        y: {
+          title: { display: true, text: 'Procurement Cluster', color: '#5a6270', font: { size: 12 } },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+})();
+</script>
+
+<!-- ============ SBU-WISE SAVINGS + CATEGORY BAR ============ -->
+<div class="chart-row">
+  <div class="sbu-panel">
+    <p class="section-label">SBU-wise Savings — October 2026 (BDT)</p>
+    <div class="chart-flex">
+      <div class="summary vbox-list">
+        <div class="box"><div class="k">AIL / MSIL</div><div class="v">৳36,940,227</div></div>
+        <div class="box"><div class="k">ACCL</div><div class="v">৳24,936,013</div></div>
+        <div class="box"><div class="k">ARMCL</div><div class="v">৳10,937,155</div></div>
+        <div class="box"><div class="k">AAFL</div><div class="v">৳8,474,186</div></div>
+        <div class="box"><div class="k">APFIL</div><div class="v">৳7,953,660</div></div>
+        <div class="box"><div class="k">HRML / FAL</div><div class="v">৳2,017,877</div></div>
+        <div class="box"><div class="k">AEL</div><div class="v">৳1,346,510</div></div>
+        <div class="box"><div class="k">ACEL</div><div class="v">৳1,333,099</div></div>
+        <div class="box"><div class="k">ABL</div><div class="v">৳1,325,011</div></div>
+        <div class="box"><div class="k">ALEL</div><div class="v">৳1,137,327</div></div>
+        <div class="box"><div class="k">Others (10 SBUs)</div><div class="v">৳1,386,108</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="donut" style="background:conic-gradient(#2f6fed 0.000% 37.780%, #1c7ed6 37.780% 63.280%, #228be6 63.280% 74.460%, #4dabf7 74.460% 83.130%, #3b5bdb 83.130% 91.260%, #5c7cfa 91.260% 93.320%, #0c8599 93.320% 94.700%, #2f9e44 94.700% 96.060%, #e8590c 96.060% 97.410%, #ae3ec9 97.410% 98.570%, #495057 98.570% 100.000%);">
+          <div class="donut-hole">
+            <div class="donut-hole-label">Total</div>
+            <div class="donut-hole-value">৳97.79M</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#2f6fed"></span><span class="legend-label">AIL / MSIL</span><span class="legend-pct">37.8%</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:#1c7ed6"></span><span class="legend-label">ACCL</span><span class="legend-pct">25.5%</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:#228be6"></span><span class="legend-label">ARMCL</span><span class="legend-pct">11.2%</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:#4dabf7"></span><span class="legend-label">AAFL</span><span class="legend-pct">8.7%</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:#3b5bdb"></span><span class="legend-label">APFIL</span><span class="legend-pct">8.1%</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:#5c7cfa"></span><span class="legend-label">HRML / FAL</span><span class="legend-pct">2.1%</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:#0c8599"></span><span class="legend-label">AEL</span><span class="legend-pct">1.4%</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:#2f9e44"></span><span class="legend-label">ACEL</span><span class="legend-pct">1.4%</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:#e8590c"></span><span class="legend-label">ABL</span><span class="legend-pct">1.4%</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:#ae3ec9"></span><span class="legend-label">ALEL</span><span class="legend-pct">1.2%</span></div>
+          <div class="legend-item"><span class="legend-dot" style="background:#495057"></span><span class="legend-label">Others (10 SBUs)</span><span class="legend-pct">1.4%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bar-chart-card">
+    <p class="section-label">Category-wise Savings — October 2026 (BDT)</p>
+    <div class="bar-chart-total">Total <b>৳97,758,671</b></div>
+    <div class="bar-chart-list">
+      <div class="bar-row">
+        <div class="bar-label-line"><span class="bar-label">Direct Material - Building Cluster</span><span class="bar-value">৳66,261,892 <span class="bar-pct">(67.8%)</span></span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:100.00%;background:#2f6fed;"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label-line"><span class="bar-label">Capex &amp; MRO-Import &amp; Local</span><span class="bar-value">৳14,091,824 <span class="bar-pct">(14.4%)</span></span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:21.27%;background:#1c7ed6;"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label-line"><span class="bar-label">Raw Material-Consumer Cluster</span><span class="bar-value">৳6,900,011 <span class="bar-pct">(7.1%)</span></span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:10.41%;background:#228be6;"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label-line"><span class="bar-label">Distribution and Logistics</span><span class="bar-value">৳4,955,058 <span class="bar-pct">(5.1%)</span></span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:7.48%;background:#4dabf7;"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label-line"><span class="bar-label">Packaging Development</span><span class="bar-value">৳2,198,910 <span class="bar-pct">(2.3%)</span></span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:3.32%;background:#3b5bdb;"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label-line"><span class="bar-label">Raw Material-Paddy AEL</span><span class="bar-value">৳2,017,877 <span class="bar-pct">(2.1%)</span></span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:3.05%;background:#0c8599;"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label-line"><span class="bar-label">Indirect Procurement- Consumer Electronic</span><span class="bar-value">৳1,333,099 <span class="bar-pct">(1.4%)</span></span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:2.01%;background:#2f9e44;"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SBU-WISE DETAIL TABLE ============ -->
+<h1 class="section-h1">SBU-wise Savings Detail — October 2026</h1>
+<p class="sub">Consolidated from the four October master-data files (RM, PM, MRO/Capex/Service, Distribution).</p>
+
+<div class="table-container">
+  <table style="min-width:900px">
+    <thead>
+      <tr>
+        <th>SBU / Entity</th>
+        <th>Cluster</th>
+        <th class="num">Savings Oct 2026 (BDT)</th>
+        <th class="num">Share of Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="cat">AIL / MSIL</td><td>Building</td><td class="num savings">৳36,940,227</td><td class="num">37.8%</td></tr>
+      <tr><td class="cat">ACCL</td><td>Building</td><td class="num savings">৳24,936,013</td><td class="num">25.5%</td></tr>
+      <tr><td class="cat">ARMCL</td><td>Building</td><td class="num savings">৳10,937,155</td><td class="num">11.2%</td></tr>
+      <tr><td class="cat">AAFL</td><td>Consumer / Feed</td><td class="num savings">৳8,474,186</td><td class="num">8.7%</td></tr>
+      <tr><td class="cat">APFIL</td><td>Building</td><td class="num savings">৳7,953,660</td><td class="num">8.1%</td></tr>
+      <tr><td class="cat">HRML / FAL</td><td>Consumer (Paddy &amp; Rice)</td><td class="num savings">৳2,017,877</td><td class="num">2.1%</td></tr>
+      <tr><td class="cat">AEL</td><td>Consumer</td><td class="num savings">৳1,346,510</td><td class="num">1.4%</td></tr>
+      <tr><td class="cat">ACEL</td><td>Consumer Electronics</td><td class="num savings">৳1,333,099</td><td class="num">1.4%</td></tr>
+      <tr><td class="cat">ABL</td><td>Consumer</td><td class="num savings">৳1,325,011</td><td class="num">1.4%</td></tr>
+      <tr><td class="cat">ALEL</td><td>Light Engineering</td><td class="num savings">৳1,137,327</td><td class="num">1.2%</td></tr>
+      <tr><td class="cat">Others (AAIL, ALML, ABSL, AML, FAE, ARL, AENL, FAR, ASLL, Group)</td><td>Various</td><td class="num savings">৳1,386,108</td><td class="num">1.4%</td></tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>Total (all SBUs)</td>
+        <td></td>
+        <td class="num">৳97,787,173</td>
+        <td class="num">100%</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<!-- ============ METHODOLOGY ============ -->
+<div class="methodology">
+  <h2>Savings Calculation Methodology — Multi-Baseline Framework</h2>
+  <p class="lead">Strategic savings for October 2026 are captured against the most defensible baseline per category, consistent with prior months:</p>
+  <ul style="font-size:12.5px;color:#5a6270;line-height:1.6;margin:0;padding-left:18px;">
+    <li><b>Direct Material – Building Cluster:</b> Avg. Market Rate vs ARL Purchase Avg. Price (ACCL, AIL/MSIL, ACL-Cotton) and Budget vs Actual COGS (APFIL PP yarn, ARMCL).</li>
+    <li><b>Capex &amp; MRO:</b> Market Rate vs Bidding / Negotiated PO Price (Offer vs Negotiated CS value) across Mechanical, Electrical, Vehicle, Civil and Import Capex.</li>
+    <li><b>Raw Material – Consumer Cluster:</b> Avg. Market Rate vs Purchase Avg. Price and Bidding/Negotiation (AAFL, ABL, ALEL).</li>
+    <li><b>Distribution &amp; Logistics:</b> Cost avoidance — fuel price increase absorbed without transport-rate adjustment, and ad-hoc hired vehicles converted to monthly fixed rental.</li>
+    <li><b>Packaging Development:</b> Last Purchase Price vs Current (LPO) — batch cards, foil, PET bottles, labels, cement bags.</li>
+    <li><b>Raw Material – Paddy AEL:</b> Market Average / Target Rate vs Lowest / Actual Rate (HRML, FAL).</li>
+    <li><b>Indirect Procurement – Consumer Electronic:</b> Dealer-rate difference and principal promotional/margin support (ACEL).</li>
+  </ul>
+</div>
+
+<p class="footnote">
+  <b>Notes &amp; data flags:</b> (1) Revised Supply Chain savings target is 5.4 Cr (BDT 54,000,000); the category targets above sum to ৳54,910,000. (2) The Building Cluster target (৳24.0M) includes the ৳3.0M ARMCL/ABSC Budget-vs-COGS line — please confirm the final baseline. (3) Category totals are read from the "Cluster Target Oct vs Achievement" tab (৳97,758,671). (4) SBU-level detail consolidates the four master-data files and sums to ৳97,787,173 — a ৳28,500 variance vs the cluster total, arising from five AEL consumer raw-material line items (Whole Bay Leaf, Red Chira, Raw Chili Powder, HDPE tea &amp; puffed-rice bags) recorded in the PM master file but not yet reflected in the cluster category totals — recommend reconciling before final sign-off. (5) Two categories (Raw Material-Consumer Cluster at 84.1% and Raw Material-Paddy AEL at 80.7%) are below target for October and are the primary recovery focus for November.
+</p>
+
+</div>
+</body>
+</html>
