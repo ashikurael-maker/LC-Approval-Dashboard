@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLDPE Film LC Approval Dashboard — APFIL (SABIC 218WJ)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  :root{
+    --bg:#0f1923; --card-bg:#1a2634; --border:#2a3a4a;
+    --text:#e0e6ed; --muted:#8899aa;
+    --blue:#3b82f6; --green:#22c55e; --red:#ef4444;
+    --amber:#f59e0b; --purple:#a855f7; --cyan:#06b6d4;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,-apple-system,sans-serif; padding:24px; line-height:1.5;}
+  h1{font-size:24px; font-weight:700; letter-spacing:-.3px;}
+  h2{font-size:17px; font-weight:600; margin-bottom:14px; color:var(--text);}
+  h3{font-size:13px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px;}
+  .sub{color:var(--muted); font-size:13px;}
+  .muted{color:var(--muted);}
+  .accent{color:var(--cyan);}
+  .good{color:var(--green);} .bad{color:var(--red);} .warn{color:var(--amber);}
+
+  .header{display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:20px;}
+  .verdict-badge{display:flex; align-items:center; gap:12px; background:linear-gradient(135deg,#0d3b2e,#14532d); border:1px solid #1f7a4d; border-radius:14px; padding:14px 22px;}
+  .verdict-label{font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:#86efac;}
+  .verdict-value{font-size:26px; font-weight:800; color:#4ade80;}
+  .verdict-score{font-size:13px; color:#86efac;}
+
+  .locked-strip{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;}
+  .lock-chip{background:var(--card-bg); border:1px solid var(--border); border-radius:8px; padding:8px 14px; font-size:12.5px; display:flex; align-items:center; gap:7px;}
+  .lock-chip .dot{width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green);}
+  .lock-chip b{color:var(--text);}
+
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:14px; margin-bottom:26px;}
+  .card{background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px 18px; position:relative; overflow:hidden;}
+  .card .kpi-label{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; margin-bottom:8px;}
+  .card .kpi-value{font-size:26px; font-weight:800; letter-spacing:-.5px;}
+  .card .kpi-sub{font-size:12px; color:var(--muted); margin-top:6px;}
+  .card .kpi-sub .delta{font-weight:700;}
+  .card .kpi-badge{position:absolute; top:12px; right:12px; font-size:10px; padding:3px 8px; border-radius:20px; text-transform:uppercase; letter-spacing:.5px;}
+  .badge-green{background:rgba(34,197,94,.15); color:#4ade80; border:1px solid rgba(34,197,94,.35);}
+  .badge-amber{background:rgba(245,158,11,.15); color:#fbbf24; border:1px solid rgba(245,158,11,.35);}
+  .badge-blue{background:rgba(59,130,246,.15); color:#93c5fd; border:1px solid rgba(59,130,246,.35);}
+  .badge-purple{background:rgba(168,85,247,.15); color:#d8b4fe; border:1px solid rgba(168,85,247,.35);}
+
+  .grid{display:grid; gap:16px; margin-bottom:26px;}
+  .g2{grid-template-columns:1fr 1fr;}
+  .g2-13{grid-template-columns:1.3fr 1fr;}
+  .g2-31{grid-template-columns:3fr 1fr;}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  @media(max-width:1000px){.g2,.g2-13,.g2-31,.g3{grid-template-columns:1fr;}}
+
+  .panel{background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:18px;}
+  .panel.flat{background:transparent; border:none; padding:0;}
+  .chart-wrap{position:relative; height:300px;}
+  .chart-wrap.tall{height:360px;}
+  .chart-wrap.short{height:240px;}
+
+  table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  th{text-align:left; color:var(--muted); font-weight:600; padding:8px 10px; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:.5px;}
+  td{padding:8px 10px; border-bottom:1px solid rgba(42,58,74,.5);}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right; font-variant-numeric:tabular-nums;}
+  .row-total td{font-weight:700; background:rgba(59,130,246,.06); border-top:1px solid var(--border);}
+  .pos{color:var(--green);} .neg{color:var(--red);}
+  .tag{display:inline-block; font-size:10.5px; padding:2px 8px; border-radius:12px; text-transform:uppercase; letter-spacing:.4px;}
+  .tag-manu{background:rgba(34,197,94,.15); color:#4ade80;}
+  .tag-reex{background:rgba(245,158,11,.15); color:#fbbf24;}
+  .tag-best{outline:2px solid var(--green); outline-offset:-2px;}
+
+  .score-list{display:flex; flex-direction:column; gap:12px;}
+  .score-row{display:flex; align-items:center; gap:10px;}
+  .score-name{width:110px; font-size:12.5px; font-weight:600; color:var(--text);}
+  .score-bar{flex:1; height:12px; background:#0f1923; border-radius:20px; overflow:hidden;}
+  .score-fill{height:100%; border-radius:20px; transition:width .6s ease;}
+  .score-val{width:34px; text-align:right; font-weight:800; font-size:14px; font-variant-numeric:tabular-nums;}
+  .score-note{font-size:11px; color:var(--muted); margin-left:120px; margin-top:-4px;}
+
+  .risk-row{display:flex; gap:14px; margin-bottom:12px; align-items:stretch;}
+  .risk-box{flex:1; border-radius:10px; padding:12px 14px; border:1px solid var(--border);}
+  .risk-box.risk{background:rgba(239,68,68,.07); border-color:rgba(239,68,68,.3);}
+  .risk-box.ret{background:rgba(34,197,94,.07); border-color:rgba(34,197,94,.3);}
+  .risk-box .h{font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-weight:700;}
+  .risk-box.risk .h{color:#fca5a5;} .risk-box.ret .h{color:#86efac;}
+  .risk-box li{font-size:12.5px; margin:6px 0 6px 16px;}
+
+  .stock-stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px;}
+  @media(max-width:700px){.stock-stats{grid-template-columns:repeat(2,1fr);}}
+  .stat{background:#0f1923; border-radius:10px; padding:14px; text-align:center; border:1px solid var(--border);}
+  .stat .v{font-size:24px; font-weight:800;}
+  .stat .l{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-top:4px;}
+
+  .gap-box{background:rgba(245,158,11,.05); border:1px solid rgba(245,158,11,.25); border-radius:10px; padding:12px 14px; margin-top:14px; font-size:11.5px; color:#fcd34d;}
+  .gap-box .h{font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; color:#fbbf24;}
+
+  .footer{margin-top:28px; padding-top:16px; border-top:1px solid var(--border); color:var(--muted); font-size:11.5px;}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:11.5px; color:var(--muted); margin-bottom:8px;}
+  .legend span{display:flex; align-items:center; gap:6px;}
+  .sw{width:10px; height:10px; border-radius:3px; display:inline-block;}
+
+  .section-anchor{scroll-margin-top:16px;}
+  .toc{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px;}
+  .toc a{font-size:11.5px; color:var(--blue); text-decoration:none; background:var(--card-bg); border:1px solid var(--border); padding:6px 12px; border-radius:20px;}
+  .toc a:hover{border-color:var(--blue);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>LLDPE Film LC Approval Dashboard <span class="accent">— with 360° Risk Coverage</span></h1>
+    <div class="sub">APFIL — Akij Poly Fibre Industries Ltd &nbsp;•&nbsp; Material: LLDPE Film Grade (SABIC 218WJ) &nbsp;•&nbsp; Beneficiary: SABIC Asia Pacific Pte Ltd &nbsp;•&nbsp; <span class="muted">Nov 2026 | 18-Month Plan</span></div>
+  </div>
+  <div class="verdict-badge">
+    <div>
+      <div class="verdict-label">LC Decision Verdict</div>
+      <div class="verdict-value">APPROVE</div>
+    </div>
+    <div style="text-align:right">
+      <div class="verdict-score" style="font-size:26px; font-weight:800; color:#4ade80;">84.4<span style="font-size:14px">/100</span></div>
+      <div class="verdict-score">5-domain weighted score</div>
+    </div>
+  </div>
+</div>
+
+<div class="locked-strip">
+  <div class="lock-chip"><span class="dot"></span> <b>PI locked</b> &nbsp;— USD 69,300</div>
+  <div class="lock-chip"><span class="dot"></span> <b>LC margin secured</b> &nbsp;— bank</div>
+  <div class="lock-chip"><span class="dot"></span> <b>FX @ 130</b> &nbsp;— already in costing</div>
+  <div class="lock-chip"><span class="dot"></span> <b>Term Contract</b> &nbsp;— manufacturer direct</div>
+</div>
+
+<div class="toc">
+  <a href="#cards">0 · Headline Cards</a>
+  <a href="#score">1 · Scoring</a>
+  <a href="#cs">2 · CS &amp; 18-Month Plan</a>
+  <a href="#sod">3 · SOD · Risk · Shareholder</a>
+  <a href="#stock">4 · Stock Position</a>
+  <a href="#pnl">5 · P&amp;L · CF · CCC · CM</a>
+  <a href="#hist">6 · Historical + Forecast</a>
+</div>
+
+<!-- ============ 0 · HEADLINE CARDS ============ -->
+<div class="cards" id="cards">
+  <div class="card">
+    <div class="kpi-label">LC Value Total</div>
+    <div class="kpi-value">$69,300</div>
+    <div class="kpi-sub">≈ <b>BDT 9,009,000</b> @ 130</div>
+    <span class="kpi-badge badge-blue">PI</span>
+  </div>
+  <div class="card">
+    <div class="kpi-label">Unit Price · Qty</div>
+    <div class="kpi-value">$1.40 <span style="font-size:15px">/KG</span></div>
+    <div class="kpi-sub">$1,400/MT &nbsp;•&nbsp; <b>49,500 KG</b> (2.06 containers)</div>
+    <span class="kpi-badge badge-purple">SABIC 218WJ</span>
+  </div>
+  <div class="card">
+    <div class="kpi-label">Gross Profit</div>
+    <div class="kpi-value good">BDT 3.19 Cr</div>
+    <div class="kpi-sub">GM <b>31,901,539</b> &nbsp; <span class="delta pos">▲ +1,900,000</span> vs budget</div>
+    <span class="kpi-badge badge-green">↑</span>
+  </div>
+  <div class="card">
+    <div class="kpi-label">Net Profit (NIAT)</div>
+    <div class="kpi-value good">BDT 2.05 Cr</div>
+    <div class="kpi-sub">NIAT <b>20,483,394</b> &nbsp; <span class="delta pos">▲ +1,341,340</span> vs budget</div>
+    <span class="kpi-badge badge-green">↑</span>
+  </div>
+  <div class="card">
+    <div class="kpi-label">LC Terms</div>
+    <div class="kpi-value">Deferred</div>
+    <div class="kpi-sub">UPAS / B. Deferred — 2-Qtr usance (180d)</div>
+    <span class="kpi-badge badge-amber">UPAS</span>
+  </div>
+  <div class="card">
+    <div class="kpi-label">Rate Saving vs Traders</div>
+    <div class="kpi-value good">$300<span style="font-size:15px">/MT</span></div>
+    <div class="kpi-sub">$1,400 SABIC vs $1,700–1,745 RE-Export</div>
+    <span class="kpi-badge badge-green">BEATING</span>
+  </div>
+</div>
+
+<!-- ============ 1 · SCORING ============ -->
+<div class="grid g2-31" id="score">
+  <div class="panel">
+    <h2>LC Decision Scoring — 5 Domain Engine</h2>
+    <div class="score-list" id="scoreList"></div>
+  </div>
+  <div class="panel">
+    <h2>Domain Radar</h2>
+    <div class="chart-wrap" style="height:270px;"><canvas id="radarChart"></canvas></div>
+    <div class="sub" style="margin-top:8px;">No blockers · no conditions → weighted score ≥ 70 → <b class="good">APPROVE</b></div>
+    <div class="gap-box">
+      <div class="h">Approval Chain (by LC value band)</div>
+      LC value ≈ BDT 9.0M (0.90 Cr) → falls in <b>5M–50M band</b> → route to <b>Procurement Head + CFO</b>.<br>
+      (SOD sign-off: Procurement → Treasury/Commercial → CFO → CEO/MD per DoA)
+    </div>
+  </div>
+</div>
+
+<!-- ============ 2 · CS + 18 MONTH PLAN ============ -->
+<div class="grid g2" id="cs">
+  <div class="panel">
+    <h2>Comparative Statement — LLDPE Film Grade (SABIC 218WJ)</h2>
+    <div class="sub" style="margin-bottom:10px;">Qty 49,500 KG · USD per MT · FX @130 · <span class="good">SABIC is both cheapest &amp; Manufacturer-direct</span></div>
+    <table>
+      <thead><tr><th>Supplier</th><th>Class</th><th class="num">USD/MT</th><th class="num">USD/KG</th><th class="num">Total (USD)</th></tr></thead>
+      <tbody id="csBody"></tbody>
+    </table>
+    <div class="gap-box">
+      <div class="h">Spot vs Blanket / Term Contract</div>
+      Requirement is continuous 18-month (~28.8 T/month) → recommend <b>TERM CONTRACT (Blanket)</b> with SABIC manufacturer-direct, not Spot trader buys. <span class="muted">(Source sheet: "For this LC — Term Contract".)</span>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>18-Month Plan — Sales vs Production vs Procurement</h2>
+    <div class="legend">
+      <span><span class="sw" style="background:var(--blue)"></span> Sales Plan (bags)</span>
+      <span><span class="sw" style="background:var(--cyan)"></span> Production Plan (bags)</span>
+      <span><span class="sw" style="background:var(--amber)"></span> LLDPE Film Grade req. (KG)</span>
+    </div>
+    <div class="chart-wrap tall"><canvas id="planChart"></canvas></div>
+    <div class="sub" style="margin-top:8px;">Purchase Plan: <b>Term Contract / Spot</b> for all 18 months (Oct'26 – Mar'28).</div>
+  </div>
+</div>
+
+<!-- ============ 3 · SOD + RISK + SHAREHOLDER ============ -->
+<div class="grid g2-13" id="sod">
+  <div class="panel">
+    <h2>Statement of Duty (SOD) — Ownership &amp; Responsibilities</h2>
+    <table>
+      <thead><tr><th>Function</th><th>Statement of Duty</th></tr></thead>
+      <tbody id="sodBody"></tbody>
+    </table>
+  </div>
+  <div>
+    <div class="panel" style="margin-bottom:16px;">
+      <h2>Risk &amp; Return</h2>
+      <div class="risk-row">
+        <div class="risk-box risk"><div class="h">Risks (if not booked)</div><ul id="riskList"></ul></div>
+        <div class="risk-box ret"><div class="h">Returns (if booked)</div><ul id="retList"></ul></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Ensuring Shareholders Value</h2>
+      <div id="shVal" style="font-size:12.5px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 4 · STOCK POSITION ============ -->
+<div class="panel" id="stock" style="margin-bottom:26px;">
+  <h2>Stock Position — LLDPE Film Grade</h2>
+  <div class="stock-stats">
+    <div class="stat"><div class="v warn">48</div><div class="l">Stock at Hand (days)</div></div>
+    <div class="stat"><div class="v">0</div><div class="l">In Transit (days)</div></div>
+    <div class="stat"><div class="v">45</div><div class="l">Lead Time (days)</div></div>
+    <div class="stat"><div class="v">45</div><div class="l">Safety Stock (days)</div></div>
+  </div>
+  <div class="grid g2">
+    <div>
+      <h3>Coverage vs Need</h3>
+      <div class="chart-wrap short"><canvas id="stockChart"></canvas></div>
+    </div>
+    <div>
+      <h3>Interpretation</h3>
+      <div class="sub" style="line-height:1.7;">
+        Current cover <b class="warn">48 days</b> sits <b>below</b> the 90-day protection line (lead 45d + safety 45d).<br><br>
+        Material will <b>arrive December 2026</b> and be <b>consumed in December</b> (requirement date 26-Dec-2026).<br><br>
+        <span class="bad">Stock-out risk is real if this LC is delayed</span> — reinforces "book now" case.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 5 · PNL + CF + CCC + CM ============ -->
+<div class="grid g2" id="pnl">
+  <div class="panel">
+    <h2>P&amp;L — Budget vs Proposed Rate (BDT, Nov'26)</h2>
+    <table>
+      <thead><tr><th>Particulars</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Δ Change</th></tr></thead>
+      <tbody id="pnlBody"></tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <h2>Cash Flow Statement Effect</h2>
+    <div class="chart-wrap" style="height:200px;"><canvas id="cfChart"></canvas></div>
+    <table style="margin-top:10px;">
+      <thead><tr><th>Item</th><th class="num">Budget</th><th class="num">Proposed</th><th class="num">Δ</th></tr></thead>
+      <tbody id="cfBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="grid g3" style="margin-bottom:26px;">
+  <div class="panel">
+    <h2>Cash Operating Cycle (CCC)</h2>
+    <div class="chart-wrap" style="height:240px;"><canvas id="cccChart"></canvas></div>
+    <table style="margin-top:8px;">
+      <thead><tr><th>Metric</th><th class="num">Budget</th><th class="num">Proposed</th></tr></thead>
+      <tbody id="cccBody"></tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <h2>Contribution Margin</h2>
+    <div class="chart-wrap" style="height:240px;"><canvas id="cmChart"></canvas></div>
+    <div class="sub" style="margin-top:8px;">Bag sale price: <b>29 → 32</b> (+3) · Volume 7.4M bags · CM/unit <b>5.00 → 5.25</b></div>
+  </div>
+  <div class="panel">
+    <h2>Costing — Landed Cost (BDT/KG)</h2>
+    <div class="chart-wrap" style="height:240px;"><canvas id="costChart"></canvas></div>
+    <div class="sub" style="margin-top:8px;">Budget rate <b>214.47</b> vs proposed <b>198.03</b> (−16.44/KG) net of VAT/AIT.</div>
+  </div>
+</div>
+
+<!-- ============ 6 · HISTORICAL + FORECAST ============ -->
+<div class="panel" id="hist" style="margin-bottom:26px;">
+  <h2>Historical Data — LLDPE Price Trend &amp; 3-Month Forecast</h2>
+  <div class="legend">
+    <span><span class="sw" style="background:var(--blue)"></span> Historical PO price (USD/KG)</span>
+    <span><span class="sw" style="background:var(--cyan)"></span> Linear trend (fit)</span>
+    <span><span class="sw" style="background:var(--green)"></span> Forecast (3-mo projection)</span>
+    <span><span class="sw" style="background:rgba(239,68,68,.35)"></span> Proposed rate $1.40 (anchor)</span>
+  </div>
+  <div class="chart-wrap tall"><canvas id="histChart"></canvas></div>
+  <table style="margin-top:12px;">
+    <thead><tr><th>PO No.</th><th>Date</th><th>Supplier</th><th class="num">Price (USD/KG)</th><th class="num">Qty (KG)</th><th class="num">Total (USD)</th></tr></thead>
+    <tbody id="histBody"></tbody>
+  </table>
+  <div class="sub" style="margin-top:10px;">3-month forward projection (Nov'26–Jan'27) via linear trend on historical price observations (±1σ band). Trend points to <b>~$1.38 → $1.42</b>, confirming the proposed <b>$1.40</b> booking is on-market.</div>
+</div>
+
+<div class="footer">
+  Source: "11th nov_Final_LLDPE Film LC Deck With 360 Risk Coverage.xlsx" (9 sheets). &nbsp;•&nbsp; APFIL · LLDPE Film Grade · SABIC 218WJ · 49,500 KG · $1.40/KG · PI $69,300 · FX 130 · Deferred/UPAS.<br>
+  PI locked · LC margin secured · FX counted in costing. Generated by SCM-ARL (LC Decision Orchestrator) — read-only, for decision support to Procurement Head + CFO.
+</div>
+
+<script>
+const fmtCr = v => 'BDT ' + (Math.abs(v)>=10000000 ? (v/10000000).toFixed(2)+' Cr' : (Math.abs(v)>=100000 ? (v/100000).toFixed(2)+' Lac' : Math.round(v).toLocaleString()));
+const fmtLac = v => (v/100000).toFixed(2)+' Lac';
+const sign = v => (v>0?'+':'') + Math.round(v).toLocaleString();
+
+/* ---------- 0 · SCORING ---------- */
+const domains = [
+  {name:'Inventory',  score:85, note:'Genuine need: 48d cover < 90d (lead 45 + safety 45). Stock-out risk if delayed.', color:'#3b82f6'},
+  {name:'Procurement',score:90, note:'PI locked; SABIC cheapest + manufacturer-direct vs RE-Export traders.', color:'#22c55e'},
+  {name:'Finance',    score:85, note:'Margin secured in bank; FX @130 in costing; NIAT +1.34M positive.', color:'#a855f7'},
+  {name:'Treasury',   score:80, note:'Deferred/UPAS (180d usance) preserves cash; no At-Sight concentration.', color:'#f59e0b'},
+  {name:'Risk',       score:82, note:'SABIC (KSA) manufacturer, high supplier rating; back to direct vs trader.', color:'#06b6d4'},
+];
+const wAvg = (domains.reduce((s,d)=>s+d.score,0)/domains.length).toFixed(1);
+document.getElementById('scoreList').innerHTML = domains.map(d=>`
+  <div>
+    <div class="score-row">
+      <div class="score-name">${d.name}</div>
+      <div class="score-bar"><div class="score-fill" style="width:${d.score}%; background:${d.color};"></div></div>
+      <div class="score-val" style="color:${d.color}">${d.score}</div>
+    </div>
+    <div class="score-note">${d.note}</div>
+  </div>`).join('') + `
+  <div class="score-row" style="border-top:1px solid var(--border); padding-top:10px;">
+    <div class="score-name" style="font-weight:800;">Weighted Score</div>
+    <div class="score-bar"><div class="score-fill" style="width:${wAvg}%; background:linear-gradient(90deg,#22c55e,#4ade80);"></div></div>
+    <div class="score-val good">${wAvg}</div>
+  </div>`;
+
+/* ---------- 2 · CS ---------- */
+const cs = [
+  {name:'SABIC Asia Pacific', cls:'Manufacturer', mt:1400, best:true},
+  {name:'GLX', cls:'RE Export', mt:1700},
+  {name:'IRMS', cls:'RE Export', mt:1720},
+  {name:'Echo BD', cls:'RE Export', mt:1745},
+];
+cs.sort((a,b)=>a.mt-b.mt);
+document.getElementById('csBody').innerHTML = cs.map(r=>`
+  <tr class="${r.best?'tag-best':''}">
+    <td>${r.name} ${r.best?'<span class="tag tag-best" style="margin-left:6px">BEST</span>':''}</td>
+    <td><span class="tag ${r.cls==='Manufacturer'?'tag-manu':'tag-reex'}">${r.cls}</span></td>
+    <td class="num">$${r.mt.toLocaleString()}</td>
+    <td class="num">$${(r.mt/1000).toFixed(2)}</td>
+    <td class="num">$${(r.mt*49.5).toLocaleString()}</td>
+  </tr>`).join('');
+
+/* ---------- 2 · 18-month plan ---------- */
+const months = ['Oct\'26','Nov\'26','Dec\'26','Jan\'27','Feb\'27','Mar\'27','Apr\'27','May\'27','Jun\'27','Jul\'27','Aug\'27','Sep\'27','Oct\'27','Nov\'27','Dec\'27','Jan\'28','Feb\'28','Mar\'28'];
+const sales = [7.50,7.40,7.45,7.50,6.95,6.70,7.25,6.85,7.40,7.40,7.45,7.40,7.50,7.40,7.45,7.50,6.55,null];
+const prod  = [7.50,7.60,7.65,7.50,6.95,6.50,7.25,6.65,7.40,7.89,7.38,7.63,7.38,7.63,7.63,7.63,5.85,null];
+const llreq = months.map(()=>28.76); // tonnes
+new Chart(document.getElementById('planChart'), {
+  data:{ labels:months, datasets:[
+    {type:'bar', label:'Sales Plan (M bags)', data:sales, backgroundColor:'rgba(59,130,246,.55)', borderColor:'#3b82f6', borderWidth:1, yAxisID:'y', order:2},
+    {type:'line', label:'Production Plan (M bags)', data:prod, borderColor:'#06b6d4', backgroundColor:'#06b6d4', tension:.3, pointRadius:2, yAxisID:'y', order:1},
+    {type:'line', label:'LLDPE Film Grade req. (tonnes)', data:llreq, borderColor:'#f59e0b', backgroundColor:'#f59e0b', tension:.2, pointRadius:0, yAxisID:'y1', order:0},
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{labels:{color:'#8899aa', boxWidth:10, font:{size:10.5}}} },
+    scales:{
+      x:{ ticks:{color:'#8899aa', font:{size:9.5}}, grid:{color:'rgba(42,58,74,.4)'} },
+      y:{ position:'left', title:{display:true,text:'Million bags',color:'#8899aa',font:{size:10}}, ticks:{color:'#8899aa',font:{size:9.5}}, grid:{color:'rgba(42,58,74,.4)'} },
+      y1:{ position:'right', title:{display:true,text:'KG (tonnes)',color:'#8899aa',font:{size:10}}, ticks:{color:'#8899aa',font:{size:9.5}}, grid:{drawOnChartArea:false} },
+    }
+  }
+});
+
+/* ---------- 3 · SOD + Risk + Shareholder ---------- */
+const sod = [
+  ['MD','Ensure timely final approval of major purchase, LC, and business proposals to avoid delays and ensure business continuity.'],
+  ['CEO','Ensure overall business alignment and timely review/approval of major commercial, procurement, and operational decisions.'],
+  ['CFO / Finance','Ensure financial viability, budget compliance, cash flow availability, optimized CCC, and timely financial review of major purchase and LC decisions.'],
+  ['Procurement','Ensure materials are purchased within approved budget and in compliance with QC-approved specifications.'],
+  ['Treasury & Commercial','Ensure LCs are opened on time while securing the most competitive bank rates and terms.'],
+  ['Sales','Ensure finished goods are sold at prices aligned with the applicable COGS and commercial strategy.'],
+  ['Inventory','Ensure proper handling, storage, and control of materials and finished goods.'],
+  ['Distribution','Ensure finished goods are delivered to customers on time and per the required delivery plan.'],
+  ['Factory','Ensure the monthly production target is achieved while maintaining required quality and operational efficiency.'],
+];
+document.getElementById('sodBody').innerHTML = sod.map(r=>`<tr><td style="font-weight:600; white-space:nowrap">${r[0]}</td><td class="muted">${r[1]}</td></tr>`).join('');
+
+document.getElementById('riskList').innerHTML = [
+  'If not booked, have to go for traders',
+  'Material unavailability if not booked',
+  'Price is changing daily',
+].map(x=>`<li>${x}</li>`).join('');
+document.getElementById('retList').innerHTML = [
+  'Ensure product availability',
+  'Smooth production',
+  'Price ~$300/MT less than traders',
+].map(x=>`<li>${x}</li>`).join('');
+
+document.getElementById('shVal').innerHTML = `
+  <p style="margin-bottom:6px;">✓ <b>Material availability</b> → smooth production (no disruption).</p>
+  <p style="margin-bottom:6px;">✓ <b>Cost saving</b> — NIAT at proposed rate <b class="good">BDT 20,483,394</b> (+1.34M vs budget).</p>
+  <p style="margin-bottom:6px;">✓ <b>Supply continuity</b> — timely booking + LC opening reduce disruption risk; safety stock maintained.</p>
+  <p style="margin-bottom:6px;">✓ <b>Demand-based procurement</b> — aligned to 18-month sales &amp; production plan.</p>
+  <p>✓ <b>Flexible purchase strategy</b> — <b class="accent">Term Contract</b> for this LC.</p>`;
+
+/* ---------- 4 · Stock ---------- */
+new Chart(document.getElementById('stockChart'), {
+  type:'bar',
+  data:{ labels:['Stock at Hand','In Transit','Lead Time','Safety Stock'],
+    datasets:[{ label:'Days', data:[48,0,45,45], backgroundColor:['#f59e0b','#8899aa','#3b82f6','#3b82f6'], borderRadius:6 }]},
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false},
+      annotation:false },
+    scales:{ x:{ beginAtZero:true, max:100, ticks:{color:'#8899aa'}, grid:{color:'rgba(42,58,74,.4)'}}, y:{ ticks:{color:'#e0e6ed'} } }
+  }
+});
+
+/* ---------- 5 · PNL / CF / CCC / CM / Cost ---------- */
+const pnl = [
+  ['Net Sales Revenue', 198991750, 200891750],
+  ['COGS', -133343165, -133343165],
+  ['Gross Margin', 30001539, 31901539],
+  ['EBITDA', 35001398, 36901398],
+  ['Earning Before Tax (EBT)', 26402833, 28252958],
+  ['Net Income After Tax', 19142054, 20483394],
+];
+document.getElementById('pnlBody').innerHTML = pnl.map(r=>{
+  const d=r[2]-r[1];
+  return `<tr><td>${r[0]}</td><td class="num">${fmtCr(r[1])}</td><td class="num">${fmtCr(r[2])}</td><td class="num ${d>=0?'pos':'neg'}">${sign(d)}</td></tr>`;
+}).join('');
+
+const cf = [
+  ['Net Income', 19142054, 20483394],
+  ['Depreciation', 9416453, 9416453],
+  ['Δ Inventory', 5700998, 5701023],
+  ['Δ Accounts Payable', 2931749, 2931749],
+  ['Δ Accounts Receivable', -2167963, -6458285],
+  ['Δ Other Current Assets', 17763014, 17763014],
+  ['Δ Other Liabilities', -10713662, -10713662],
+  ['Δ Tax Provision', 7260779, 7769563],
+  ['Cash Flow from Operations', 54063090, 51622918],
+];
+document.getElementById('cfBody').innerHTML = cf.map(r=>{
+  const d=r[2]-r[1];
+  const cls = r[0].startsWith('Cash Flow') ? 'row-total' : '';
+  return `<tr class="${cls}"><td>${r[0]}</td><td class="num">${fmtLac(r[1])}</td><td class="num">${fmtLac(r[2])}</td><td class="num ${d>=0?'pos':'neg'}">${sign(d)}</td></tr>`;
+}).join('');
+
+new Chart(document.getElementById('cfChart'), {
+  type:'bar',
+  data:{ labels:['Budget','Proposed'],
+    datasets:[{ label:'Cash Flow from Operations', data:[54063090,51622918], backgroundColor:['#3b82f6','#22c55e'], borderRadius:6 }]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>fmtCr(c.parsed.y)} } },
+    scales:{ y:{ ticks:{ color:'#8899aa', callback:v=>fmtLac(v)}, grid:{color:'rgba(42,58,74,.4)'} }, x:{ ticks:{color:'#e0e6ed'} } }
+  }
+});
+
+const ccc = [['DSO',70.8,70.79],['DPO',66.0,66.0],['DIO',121.27,121.27],['CCC',126.07,126.06]];
+document.getElementById('cccBody').innerHTML = ccc.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td></tr>`).join('');
+new Chart(document.getElementById('cccChart'), {
+  type:'bar',
+  data:{ labels:['DSO','DPO','DIO','CCC'],
+    datasets:[
+      {label:'Budget', data:[70.8,66.0,121.27,126.07], backgroundColor:'#3b82f6', borderRadius:4},
+      {label:'Proposed', data:[70.79,66.0,121.27,126.06], backgroundColor:'#22c55e', borderRadius:4},
+    ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{labels:{color:'#8899aa', boxWidth:10, font:{size:10}}} },
+    scales:{ y:{ ticks:{color:'#8899aa'}, grid:{color:'rgba(42,58,74,.4)'} }, x:{ ticks:{color:'#e0e6ed'} } }
+  }
+});
+
+new Chart(document.getElementById('cmChart'), {
+  type:'bar',
+  data:{ labels:['CM/Unit (BDT)','CM Total (Cr)'],
+    datasets:[
+      {label:'Budget', data:[5.0,3.70], backgroundColor:'#3b82f6', borderRadius:4},
+      {label:'Proposed', data:[5.25,3.885], backgroundColor:'#22c55e', borderRadius:4},
+    ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{labels:{color:'#8899aa', boxWidth:10, font:{size:10}}} },
+    scales:{ y:{ ticks:{color:'#8899aa'}, grid:{color:'rgba(42,58,74,.4)'} }, x:{ ticks:{color:'#e0e6ed'} } }
+  }
+});
+
+new Chart(document.getElementById('costChart'), {
+  type:'bar',
+  data:{ labels:['Budget','Proposed'],
+    datasets:[{ label:'Landed rate (BDT/KG)', data:[214.47,198.03], backgroundColor:['#3b82f6','#22c55e'], borderRadius:6 }]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{ y:{ beginAtZero:true, ticks:{color:'#8899aa'}, grid:{color:'rgba(42,58,74,.4)'} }, x:{ ticks:{color:'#e0e6ed'} } }
+  }
+});
+
+/* ---------- 6 · Historical + Forecast ---------- */
+const hist = [
+  ['PO-APFIL-APR25-4','26-Feb-2025','SABIC Asia Pacific',1.07,74250],
+  ['PO-APFIL-OCT25-128','08-Oct-2025','SABIC Asia Pacific',0.94,49500],
+  ['PO-APFIL-OCT25-129','08-Oct-2025','SABIC Asia Pacific',0.94,49500],
+  ['PO-APFIL-FEB26-5','29-Dec-2025','SABIC Asia Pacific',0.87,24750],
+  ['PO-APFIL-APR26-72','08-Apr-2026','QINGDAO QINGSHENG ENERGY',1.54,99000],
+];
+document.getElementById('histBody').innerHTML = hist.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="num">$${r[3].toFixed(2)}</td><td class="num">${r[4].toLocaleString()}</td><td class="num">$${(r[3]*r[4]).toLocaleString()}</td></tr>`).join('')
+ + `<tr class="row-total"><td>PROPOSED</td><td>—</td><td>SABIC Asia Pacific</td><td class="num good">$1.40</td><td class="num">49,500</td><td class="num good">$69,300</td></tr>`;
+
+// linear regression on history (month index from Feb-2025)
+const xs=[0,8,8,10,14], ys=[1.07,0.94,0.94,0.87,1.54];
+const n=xs.length, mx=xs.reduce((a,b)=>a+b,0)/n, my=ys.reduce((a,b)=>a+b,0)/n;
+let sxy=0, sxx=0; for(let i=0;i<n;i++){ sxy+=(xs[i]-mx)*(ys[i]-my); sxx+=(xs[i]-mx)**2; }
+const slope=sxy/sxx, intercept=my-slope*mx;
+const histLbl=['Feb\'25','','Apr\'25','','Jun\'25','','Aug\'25','','Oct\'25','','Dec\'25','','Feb\'26','','Apr\'26','','Jun\'26','','Aug\'26','','Oct\'26','','Dec\'26','','Jan\'27'];
+const trend = histLbl.map((_,i)=>+(intercept+slope*i).toFixed(3));
+const fcastIdx=[21,22,23]; // Nov'26, Dec'26, Jan'27
+const fcast = fcastIdx.map(i=>({x:histLbl[i], y:+(intercept+slope*i).toFixed(3)}));
+const std = Math.sqrt(ys.reduce((a,v)=>a+(v-my)**2,0)/n);
+
+new Chart(document.getElementById('histChart'), {
+  type:'line',
+  data:{ labels:histLbl, datasets:[
+    {label:'Historical PO price', data:histLbl.map((l,i)=> i===0?1.07 : i===8?0.94 : i===10?0.87 : i===14?1.54 : null), borderColor:'#3b82f6', backgroundColor:'#3b82f6', spanGaps:false, pointRadius:3, tension:.25},
+    {label:'Linear trend', data:trend, borderColor:'#06b6d4', borderDash:[6,4], pointRadius:0, tension:.2},
+    {label:'Forecast', data:histLbl.map((l,i)=> fcast.find(f=>f.x===l)?.y ?? null), borderColor:'#22c55e', backgroundColor:'#22c55e', pointRadius:5, tension:.2, borderWidth:2},
+    {label:'Proposed $1.40', data:histLbl.map(()=>1.40), borderColor:'rgba(239,68,68,.7)', borderDash:[2,3], pointRadius:0, borderWidth:1.5},
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{labels:{color:'#8899aa', boxWidth:10, font:{size:10}}} },
+    scales:{
+      x:{ ticks:{color:'#8899aa', font:{size:9}}, grid:{color:'rgba(42,58,74,.4)'} },
+      y:{ title:{display:true,text:'USD / KG',color:'#8899aa',font:{size:10}}, ticks:{color:'#8899aa'}, grid:{color:'rgba(42,58,74,.4)'},
+        suggestedMin:0.6, suggestedMax:1.8 }
+    }
+  }
+});
+
+/* ---------- radar ---------- */
+new Chart(document.getElementById('radarChart'), {
+  type:'radar',
+  data:{ labels:domains.map(d=>d.name),
+    datasets:[{ label:'Score', data:domains.map(d=>d.score),
+      backgroundColor:'rgba(34,197,94,.18)', borderColor:'#22c55e', pointBackgroundColor:'#22c55e', borderWidth:2 }]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{ r:{ min:0, max:100, ticks:{ stepSize:20, color:'#8899aa', backdropColor:'transparent', font:{size:9}}, grid:{color:'rgba(42,58,74,.5)'}, angleLines:{color:'rgba(42,58,74,.5)'}, pointLabels:{ color:'#e0e6ed', font:{size:11} } } }
+  }
+});
+</script>
+</body>
+</html>
